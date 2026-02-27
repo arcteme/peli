@@ -446,7 +446,10 @@ export class HUD {
     
     ctx.save();
     ctx.translate(px, pz);
-    ctx.rotate(playerHeading);
+    // World: euler.y=0 → facing +Z. On canvas +Z maps to canvas +Y (down).
+    // Triangle tip points canvas −Y (up) at rotation=0, so apply (PI − heading)
+    // to make it point in the true flight direction.
+    ctx.rotate(Math.PI - playerHeading);
     ctx.fillStyle = '#44ff44';
     ctx.beginPath();
     ctx.moveTo(0, -5);
