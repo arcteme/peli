@@ -218,6 +218,38 @@ export class HUD {
           opacity: 0.7;
           text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
+
+        .hud-controls {
+          position: absolute;
+          bottom: 8px; left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          font-size: 11px;
+          color: rgba(255,255,255,0.52);
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.9);
+          white-space: nowrap;
+          letter-spacing: 0.3px;
+          user-select: none;
+        }
+        .hud-controls .ctrl-row {
+          display: flex;
+          gap: 14px;
+          align-items: center;
+        }
+        .hud-controls kbd {
+          display: inline-block;
+          padding: 1px 5px;
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.25);
+          border-radius: 3px;
+          font-family: inherit;
+          font-size: 10px;
+          line-height: 1.4;
+          letter-spacing: 0;
+        }
       </style>
       
       <div class="hud-damage"></div>
@@ -247,6 +279,21 @@ export class HUD {
       <div class="hud-respawn"></div>
       <canvas class="hud-minimap" width="140" height="140"></canvas>
       <div class="hud-msg"></div>
+
+      <div class="hud-controls">
+        <div class="ctrl-row">
+          <span><kbd>W</kbd><kbd>S</kbd> Pitch</span>
+          <span><kbd>A</kbd><kbd>D</kbd> Roll</span>
+          <span><kbd>Q</kbd><kbd>E</kbd> Yaw</span>
+          <span><kbd>Shift</kbd> Throttle Up</span>
+          <span><kbd>Ctrl</kbd> Throttle Down</span>
+        </div>
+        <div class="ctrl-row">
+          <span><kbd>Space</kbd> / Left Click: Fire</span>
+          <span><kbd>V</kbd> Toggle Camera</span>
+          <span>Mouse · flight control</span>
+        </div>
+      </div>
     `;
     
     document.body.appendChild(this.container);

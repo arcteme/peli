@@ -248,7 +248,7 @@ export class Game {
     
     // --- Input ---
     // Pass cockpit flag so keyboard pitch/roll are reversed inside the cockpit view
-    const input = this.inputManager.getInput();
+    const input = this.inputManager.getInput(dt);
     
     // Init audio on first user interaction (browser policy)
     if (input.fire || input.throttle > 0.1) {
@@ -270,6 +270,18 @@ export class Game {
     if (this.combat.playerAlive) {
       this.playerPhysics.update(input, dt);
       
+      // Ground crash — hitting the terrain floor counts as shot down
+      if (this.playerPhysics.position.y <= PHYSICS.minAltitude + 0.2) {
+        this.combat.killPlayer();
+        this.effects.spawnExplosion(this.playerPhysics.position.clone());
+        this.audioManager.playExplosion();
+        const spawn = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
+        this.playerPhysics.position.set(spawn.x, spawn.y, spawn.z);
+        this.playerPhysics.speed = def.speedCruise;
+        const groundHeading = Math.atan2(-spawn.x, -spawn.z);
+        this.playerPhysics.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), groundHeading);
+      }
+
       // Building collision
       if (this.cityMap.checkCollision(this.playerPhysics.position, 0.5)) {
         this.combat.killPlayer();
@@ -351,6 +363,11 @@ export class Game {
       (position, direction, damage) => {
         // Enemy fires a bullet
         this.effects.spawnTracer(position, direction, 'enemy', damage);
+      },
+      (position) => {
+        // AI crashed into ground or building
+        this.effects.spawnExplosion(position);
+        this.audioManager.playExplosion();
       }
     );
     

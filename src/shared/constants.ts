@@ -40,16 +40,27 @@ export const SPAWN_POINTS = [
   { x: -200, y: 100, z: -350 },
 ];
 
+// AI enemy spawn points — placed on the opposite side of the map from the
+// player (who spawns at x≈+400).  Each entry is x<0 or far z.
+export const AI_SPAWN_POINTS = [
+  { x: -400, y: 80, z:    0 },
+  { x: -283, y: 90, z:  283 },
+  { x: -283, y: 90, z: -283 },
+  { x:    0, y: 80, z:  400 },
+  { x:    0, y: 80, z: -400 },
+  { x: -200, y: 90, z: -350 },
+];
+
 export const AIRCRAFT: Record<string, AircraftDef> = {
   zero: {
     id: 'zero',
     name: 'A6M Zero',
     country: 'Japan',
     countryFlag: '🇯🇵',
-    speedMin: 3,
-    speedMax: 12,
-    speedCruise: 7,
-    acceleration: 2.5,
+    speedMin: 9,
+    speedMax: 36,
+    speedCruise: 21,
+    acceleration: 7.5,
     pitchRate: 2.5,
     yawRate: 1.2,
     rollRate: 3.5,
@@ -65,10 +76,10 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     name: 'Spitfire Mk.IX',
     country: 'United Kingdom',
     countryFlag: '🇬🇧',
-    speedMin: 3.5,
-    speedMax: 13,
-    speedCruise: 7.5,
-    acceleration: 2.8,
+    speedMin: 10.5,
+    speedMax: 39,
+    speedCruise: 22.5,
+    acceleration: 8.4,
     pitchRate: 2.2,
     yawRate: 1.0,
     rollRate: 3.8,
@@ -84,10 +95,10 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     name: 'Bf 109 G-6',
     country: 'Germany',
     countryFlag: '🇩🇪',
-    speedMin: 3.5,
-    speedMax: 14,
-    speedCruise: 8,
-    acceleration: 3,
+    speedMin: 10.5,
+    speedMax: 42,
+    speedCruise: 24,
+    acceleration: 9,
     pitchRate: 2.0,
     yawRate: 0.9,
     rollRate: 3.2,

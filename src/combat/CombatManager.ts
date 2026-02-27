@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AircraftDef, AircraftId, InputState } from '../shared/types';
-import { AIRCRAFT, SPAWN_POINTS } from '../shared/constants';
+import { AIRCRAFT, AI_SPAWN_POINTS, PHYSICS } from '../shared/constants';
+
 import { FlightPhysics } from '../physics/FlightPhysics';
 import { createAircraftModel } from '../entities/AircraftModel';
 
@@ -59,12 +60,13 @@ export class CombatManager {
     for (let i = 0; i < count; i++) {
       const aircraftId = aircraftIds[i % aircraftIds.length];
       const def = AIRCRAFT[aircraftId];
-      const spawn = SPAWN_POINTS[i % SPAWN_POINTS.length];
+      // Spawn from opposite side of map to the player
+      const spawn = AI_SPAWN_POINTS[i % AI_SPAWN_POINTS.length];
       
       const spawnPos = new THREE.Vector3(
-        spawn.x + (Math.random() - 0.5) * 60,
-        spawn.y + (Math.random() - 0.5) * 30,
-        spawn.z + (Math.random() - 0.5) * 60
+        spawn.x + (Math.random() - 0.5) * 40,
+        spawn.y,
+        spawn.z + (Math.random() - 0.5) * 40
       );
       
       const heading = Math.atan2(-spawnPos.x, -spawnPos.z); // face center
@@ -74,10 +76,12 @@ export class CombatManager {
       mesh.position.copy(spawnPos);
       this.scene.add(mesh);
       
-      const patrolAngle = (i / count) * Math.PI * 2; // evenly space around circle
-      const patrolRadius = 150 + Math.random() * 200;  // 150-350m from center
-      const patrolAltitude = 50 + Math.random() * 80;   // 50-130m
-      const patrolDirection = Math.random() > 0.5 ? 1 : -1; // CW or CCW
+      // Evenly spaced starting angles, fixed distinct altitudes and radii for
+      // clear individual paths that don't clog together around the centre.
+      const patrolAngle = (i / count) * Math.PI * 2;
+      const patrolRadius    = 120 + i * 35;         // 120, 155, 190, 225, 260, 295 m
+      const patrolAltitude  =  45 + i * 22;         //  45,  67,  89, 111, 133, 155 m
+      const patrolDirection = (i % 2 === 0) ? 1 : -1; // alternate CW / CCW
       
       const enemy: AIPlane = {
         id: `ai_${this.nextId++}`,
@@ -114,7 +118,8 @@ export class CombatManager {
     playerAlive: boolean,
     buildingColliders: THREE.Box3[],
     now: number,
-    onEnemyFire?: (position: THREE.Vector3, direction: THREE.Vector3, damage: number) => void
+    onEnemyFire?: (position: THREE.Vector3, direction: THREE.Vector3, damage: number) => void,
+    onEnemyKilled?: (position: THREE.Vector3) => void
   ) {
     // Update kill feed (remove old entries)
     this.killFeed = this.killFeed.filter(k => now - k.time < 5000);
@@ -167,9 +172,17 @@ export class CombatManager {
       // Update physics
       enemy.physics.update(input, dt);
       
+      // Ground crash — if the plane reaches the altitude floor it has crashed
+      if (enemy.physics.position.y <= PHYSICS.minAltitude + 0.2) {
+        const pos = this.killEnemy(enemy, 'crashed into the ground', now);
+        if (pos && onEnemyKilled) onEnemyKilled(pos);
+        continue;
+      }
+      
       // Building collision
       if (this.checkBuildingCollision(enemy.physics.position, buildingColliders)) {
-        this.killEnemy(enemy, 'crashed into a building');
+        const pos = this.killEnemy(enemy, 'crashed into a building', now);
+        if (pos && onEnemyKilled) onEnemyKilled(pos);
         continue;
       }
       
@@ -339,9 +352,11 @@ export class CombatManager {
         input.yaw *= 0.3;
       }
       
-      // Also ensure minimum altitude above buildings
-      if (pos.y < 40) {
-        input.pitch = Math.min(input.pitch, -0.5); // pitch up
+      // Ensure minimum altitude — pitch up if getting dangerously low
+      if (pos.y < 25) {
+        const urgency = Math.max(0, (25 - pos.y) / 25);
+        input.pitch = Math.min(input.pitch, -urgency); // pitch up (negative = up)
+        input.throttle = Math.min(1, input.throttle + urgency * 0.4);
       }
     }
     
@@ -381,20 +396,27 @@ export class CombatManager {
     return false;
   }
   
-  private killEnemy(enemy: AIPlane, cause: string) {
+  private killEnemy(enemy: AIPlane, cause: string, now?: number) {
+    const deathPos = enemy.physics.position.clone();
     enemy.alive = false;
     enemy.respawnTimer = 3;
     enemy.mesh.visible = false;
     
-    // Return explosion position
-    return enemy.physics.position.clone();
+    if (now !== undefined) {
+      this.killFeed.push({
+        text: `${enemy.aircraftDef.name} ${cause}`,
+        time: now,
+      });
+    }
+    
+    return deathPos;
   }
   
   private respawnEnemy(enemy: AIPlane) {
-    const spawn = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
+    const spawn = AI_SPAWN_POINTS[Math.floor(Math.random() * AI_SPAWN_POINTS.length)];
     enemy.physics.position.set(
       spawn.x + (Math.random() - 0.5) * 40,
-      spawn.y + (Math.random() - 0.5) * 20,
+      spawn.y,
       spawn.z + (Math.random() - 0.5) * 40
     );
     const heading = Math.atan2(-enemy.physics.position.x, -enemy.physics.position.z);
@@ -427,7 +449,7 @@ export class CombatManager {
           this.hitMarkerTimer = 0.3;
           
           if (enemy.health <= 0) {
-            const deathPos = this.killEnemy(enemy, 'shot down');
+            const deathPos = this.killEnemy(enemy, 'shot down', performance.now());
             if (deathPos) onHit(enemy, deathPos);
             this.playerKills++;
             this.killFeed.push({

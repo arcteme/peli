@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "preprocess-gml": "node scripts/process-gml.mjs",
+    "fix-terrain": "npm run preprocess-gml && node scripts/fix-terrain-floors.mjs",
     "crop-aerial": "python scripts/crop-aerial.py"
   },
   "keywords": [],
