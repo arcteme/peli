@@ -25,6 +25,7 @@ interface AIPlane {
   patrolDirection: number;   // +1 or -1 (CW vs CCW)
   pilotName: string;         // display name shown above the plane
   labelSprite: THREE.Sprite; // world-space floating name tag
+  disengageTimer: number;    // > 0 = forced retreat, re-engage after
   lastFireTime: number;
 }
 
@@ -117,6 +118,7 @@ export class CombatManager {
         patrolDirection,
         pilotName,
         labelSprite,
+        disengageTimer: 0,
         lastFireTime: 0,
       };
       
@@ -161,6 +163,16 @@ export class CombatManager {
       
       // Continuously advance patrol orbit (not just on decision tick)
       this.updatePatrolOrbit(enemy, dt);
+      
+      // Count down forced disengage
+      if (enemy.disengageTimer > 0) {
+        enemy.disengageTimer -= dt;
+        enemy.behavior = 'evade';
+        if (enemy.disengageTimer <= 0 && this.attackerId === null) {
+          // Re-claim attacker slot after retreating
+          enemy.disengageTimer = 0;
+        }
+      }
       
       // AI decision making
       enemy.behaviorTimer -= dt;
@@ -240,27 +252,35 @@ export class CombatManager {
     const distToPlayer = enemy.physics.position.distanceTo(playerPos);
     
     if (!playerAlive) {
-      // Player is dead — everyone stands down and orbits
       if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'patrol';
       return;
     }
     
-    // --- Player is alive: always engage ---
+    // Forced disengage still active — handled in update loop, skip decision
+    if (enemy.disengageTimer > 0) return;
+    
+    // Very low health close by — break off
     if (distToPlayer < 120 && enemy.health < enemy.maxHealth * 0.3) {
-      // Very low health and close — break off and evade
       if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'evade';
       return;
     }
     
-    // One designated attacker fires; others chase to close the gap
+    // Designated attacker: randomly disengage every now and then (~20% chance per tick)
+    if (this.attackerId === enemy.id && Math.random() < 0.20) {
+      this.attackerId = null;
+      enemy.disengageTimer = 5 + Math.random() * 5; // 5-10 s retreat
+      enemy.behavior = 'evade';
+      return;
+    }
+    
+    // One designated attacker fires; others circle at distance
     const canAttack = this.attackerId === null || this.attackerId === enemy.id;
     if (canAttack) {
       enemy.behavior = 'attack';
       this.attackerId = enemy.id;
     } else {
-      // Hang back a bit — approach but don't shoot
       enemy.behavior = 'chase';
     }
   }
@@ -284,28 +304,26 @@ export class CombatManager {
         break;
       case 'chase':
         targetPoint = playerPos;
-        input.throttle = 0.65;
+        input.throttle = 0.55;
         break;
       case 'attack':
         targetPoint = playerPos;
-        input.throttle = 0.72;
+        input.throttle = 0.60;
         break;
       case 'evade':
-        // Fly away from player but stay near city center
-        // Pick a point roughly opposite to player, but clamped near center
         {
+          // Fly well away from the player — ~300m opposite, giving the player breathing room
           const awayDir = enemy.physics.position.clone().sub(playerPos).normalize();
-          const evadeTarget = awayDir.multiplyScalar(120).add(new THREE.Vector3(0, 0, 0));
-          // Clamp within 250m of center
+          const evadeTarget = awayDir.multiplyScalar(300);
           const evadeDist = Math.sqrt(evadeTarget.x ** 2 + evadeTarget.z ** 2);
-          if (evadeDist > 250) {
-            evadeTarget.x *= 250 / evadeDist;
-            evadeTarget.z *= 250 / evadeDist;
+          if (evadeDist > 380) {
+            evadeTarget.x *= 380 / evadeDist;
+            evadeTarget.z *= 380 / evadeDist;
           }
           evadeTarget.y = 80 + Math.random() * 60;
           targetPoint = evadeTarget;
         }
-        input.throttle = 1.0;
+        input.throttle = 0.8;
         break;
       default:
         targetPoint = enemy.patrolPoint;
@@ -321,17 +339,17 @@ export class CombatManager {
     
     // Pitch: positive pitchDot = target is above in local space = pitch nose up (positive)
     const pitchDot = _toTarget.dot(up);
-    input.pitch = pitchDot * 2;
+    input.pitch = pitchDot * 1.2;  // was 2.0 — gentler, less agile
     
     // Roll/Yaw: positive yawDot = target is to the right = bank right to turn right (+roll)
     const yawDot = _toTarget.dot(right);
-    input.roll = yawDot * 1.5;
-    input.yaw = -yawDot * 0.5;  // yaw sign is intentionally opposite: negative input turns right
+    input.roll = yawDot * 0.9;     // was 1.5 — slower bank
+    input.yaw = -yawDot * 0.3;
     
     // --- Player proximity break-off (avoid collision) ---
-    // When the AI gets too close, pull away instead of flying through.
-    const BREAKOFF_DIST = 40;  // start easing
-    const HARD_BREAKOFF = 20;  // full override
+    // Large bubble: starts pulling away at 100m, full override at 50m.
+    const BREAKOFF_DIST = 100;
+    const HARD_BREAKOFF = 50;
     const distToPlayer = enemy.physics.position.distanceTo(playerPos);
     if ((enemy.behavior === 'attack' || enemy.behavior === 'chase') && distToPlayer < BREAKOFF_DIST) {
       // Direction away from player in world space
@@ -408,10 +426,11 @@ export class CombatManager {
       }
     }
     
-    // Clamp
-    input.pitch = Math.max(-1, Math.min(1, input.pitch));
-    input.yaw = Math.max(-1, Math.min(1, input.yaw));
-    input.roll = Math.max(-1, Math.min(1, input.roll));
+    // Clamp — lower ceiling keeps AI less snappy than the player
+    const AI_MAX = 0.65;
+    input.pitch = Math.max(-AI_MAX, Math.min(AI_MAX, input.pitch));
+    input.yaw   = Math.max(-AI_MAX, Math.min(AI_MAX, input.yaw));
+    input.roll  = Math.max(-AI_MAX, Math.min(AI_MAX, input.roll));
     
     // Fire when attacking and aimed at player.
     // Engagement range raised to 120m so they shoot from distance rather than closing in.
@@ -481,6 +500,7 @@ export class CombatManager {
     );
     enemy.behavior = 'chase';  // immediately intercept the player
     enemy.behaviorTimer = 0;   // re-evaluate right away
+    enemy.disengageTimer = 0;
     // Also release attacker lock on respawn
     if (this.attackerId === enemy.id) this.attackerId = null;
     // Reset orbit point in case they fall back to patrol later
