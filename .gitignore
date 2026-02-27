@@ -1,0 +1,18 @@
+node_modules/
+
+# Vite build output
+dist/
+
+# Large generated/binary assets — regenerate locally with npm run preprocess-gml / crop-aerial
+public/kerava-walls.bin
+public/kerava-roofs.bin
+public/kerava-terrain.bin
+public/kerava-aerial.jpg
+
+# Aerial photo source (user-supplied, not committed)
+scripts/kerava-source.png
+scripts/kerava-source.jpg
+scripts/kerava-source.jpeg
+
+# CityGML source — too large for GitHub (126 MB), regenerate from original data
+src/world/L4143F.gml
