@@ -277,6 +277,7 @@ export class Game {
         this.audioManager.playExplosion();
         const spawn = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
         this.playerPhysics.position.set(spawn.x, spawn.y, spawn.z);
+        this.playerPhysics.velocity.set(0, 0, 0);
         this.playerPhysics.speed = def.speedCruise;
         const groundHeading = Math.atan2(-spawn.x, -spawn.z);
         this.playerPhysics.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), groundHeading);
@@ -290,6 +291,7 @@ export class Game {
         // Respawn position
         const spawn = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
         this.playerPhysics.position.set(spawn.x, spawn.y, spawn.z);
+        this.playerPhysics.velocity.set(0, 0, 0);
         this.playerPhysics.speed = def.speedCruise;
         const heading = Math.atan2(-spawn.x, -spawn.z);
         this.playerPhysics.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), heading);
@@ -343,6 +345,7 @@ export class Game {
       if (this.combat.playerAlive) {
         const spawn = SPAWN_POINTS[Math.floor(Math.random() * SPAWN_POINTS.length)];
         this.playerPhysics.position.set(spawn.x, spawn.y, spawn.z);
+        this.playerPhysics.velocity.set(0, 0, 0);
         this.playerPhysics.speed = def.speedCruise;
         this.inputManager.setThrottle(0.5);
         const heading = Math.atan2(-spawn.x, -spawn.z);
@@ -360,14 +363,14 @@ export class Game {
       this.combat.playerAlive,
       this.cityMap.colliders,
       now,
-      (position, direction, damage) => {
+      (position, direction, damage, ownerId) => {
         // Enemy fires — add generous spread so they're lousy shots
         const spread = 0.12;
         direction.x += (Math.random() - 0.5) * spread;
         direction.y += (Math.random() - 0.5) * spread;
         direction.z += (Math.random() - 0.5) * spread;
         direction.normalize();
-        this.effects.spawnTracer(position, direction, 'enemy', damage);
+        this.effects.spawnTracer(position, direction, ownerId, damage);
       },
       (position) => {
         // AI crashed into ground or building
@@ -407,6 +410,16 @@ export class Game {
             this.audioManager.playExplosion();
           }
         }
+        // Also check AI-on-AI friendly fire
+        this.combat.checkAITracerHits(
+          tracer.mesh.position,
+          tracer.ownerId,
+          tracer.damage,
+          (_enemy, position) => {
+            this.effects.spawnExplosion(position);
+            this.audioManager.playExplosion();
+          }
+        );
       }
       
       // Check bullets hitting buildings

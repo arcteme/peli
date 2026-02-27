@@ -133,7 +133,7 @@ export class CombatManager {
     playerAlive: boolean,
     buildingColliders: THREE.Box3[],
     now: number,
-    onEnemyFire?: (position: THREE.Vector3, direction: THREE.Vector3, damage: number) => void,
+    onEnemyFire?: (position: THREE.Vector3, direction: THREE.Vector3, damage: number, ownerId: string) => void,
     onEnemyKilled?: (position: THREE.Vector3) => void
   ) {
     // Update kill feed (remove old entries)
@@ -177,12 +177,12 @@ export class CombatManager {
       // AI decision making
       enemy.behaviorTimer -= dt;
       if (enemy.behaviorTimer <= 0) {
-        this.decideAIBehavior(enemy, playerPosition, playerAlive);
+        this.decideAIBehavior(enemy, playerPosition, playerAlive, this.enemies);
         enemy.behaviorTimer = 1 + Math.random() * 2;
       }
       
       // Generate AI input (with building avoidance)
-      const input = this.generateAIInput(enemy, playerPosition, playerAlive, now, buildingColliders);
+      const input = this.generateAIInput(enemy, playerPosition, playerAlive, now, buildingColliders, this.enemies);
       
       // Force AI back if way out of bounds (physics boundary is 450m; give AI some margin)
       const distFromCenter = Math.sqrt(
@@ -228,11 +228,11 @@ export class CombatManager {
       const prop = enemy.mesh.getObjectByName('propeller');
       if (prop) prop.rotation.z += dt * 30;
       
-      // Fire at player
+      // Fire at target (player or another AI)
       if (input.fire && enemy.alive && onEnemyFire) {
         const muzzle = enemy.physics.getMuzzlePosition();
         const fwd = enemy.physics.getForward();
-        onEnemyFire(muzzle, fwd, enemy.aircraftDef.weaponDamage);
+        onEnemyFire(muzzle, fwd, enemy.aircraftDef.weaponDamage, enemy.id);
       }
     }
   }
@@ -249,11 +249,12 @@ export class CombatManager {
     );
   }
   
-  private decideAIBehavior(enemy: AIPlane, playerPos: THREE.Vector3, playerAlive: boolean) {
+  private decideAIBehavior(enemy: AIPlane, playerPos: THREE.Vector3, playerAlive: boolean, enemies: AIPlane[]) {
     const distToPlayer = enemy.physics.position.distanceTo(playerPos);
     
     if (!playerAlive) {
       if (this.attackerId === enemy.id) this.attackerId = null;
+      enemy.targetId = null;
       enemy.behavior = 'patrol';
       return;
     }
@@ -261,13 +262,30 @@ export class CombatManager {
     // Forced disengage still active — handled in update loop, skip decision
     if (enemy.disengageTimer > 0) return;
     
-    // Very low health close by — break off
+    // Very low health close by — break off and forget AI target
     if (distToPlayer < 120 && enemy.health < enemy.maxHealth * 0.3) {
       if (this.attackerId === enemy.id) this.attackerId = null;
+      enemy.targetId = null;
       enemy.behavior = 'evade';
       return;
     }
     
+    // If currently targeting another AI, validate target is still alive
+    if (enemy.targetId !== null) {
+      const aiTarget = enemies.find(e => e.id === enemy.targetId && e.alive);
+      if (aiTarget) {
+        // Continue the dogfight — random chance to re-engage player instead
+        if (Math.random() < 0.05) {
+          enemy.targetId = null; // switch back to player pursuit
+        } else {
+          enemy.behavior = 'attack';
+          return;
+        }
+      } else {
+        enemy.targetId = null; // AI target is gone
+      }
+    }
+
     // Designated attacker: randomly disengage every now and then (~20% chance per tick)
     if (this.attackerId === enemy.id && Math.random() < 0.20) {
       this.attackerId = null;
@@ -276,17 +294,33 @@ export class CombatManager {
       return;
     }
     
-    // One designated attacker fires; others circle at distance
-    const canAttack = this.attackerId === null || this.attackerId === enemy.id;
-    if (canAttack) {
+    // One designated attacker fires at the player; others may dogfight each other
+    const canAttackPlayer = this.attackerId === null || this.attackerId === enemy.id;
+    if (canAttackPlayer) {
       enemy.behavior = 'attack';
+      enemy.targetId = null; // targeting player
       this.attackerId = enemy.id;
     } else {
+      // 35% chance to pick another AI enemy to dogfight instead of just chasing the player
+      if (Math.random() < 0.35) {
+        const aiOpponents = enemies.filter(e => e.alive && e.id !== enemy.id && e.targetId === null);
+        if (aiOpponents.length > 0) {
+          enemy.targetId = aiOpponents[Math.floor(Math.random() * aiOpponents.length)].id;
+          enemy.behavior = 'attack';
+          return;
+        }
+      }
       enemy.behavior = 'chase';
     }
   }
   
-  private generateAIInput(enemy: AIPlane, playerPos: THREE.Vector3, playerAlive: boolean, now: number, buildingColliders?: THREE.Box3[]): InputState {
+  private generateAIInput(enemy: AIPlane, playerPos: THREE.Vector3, playerAlive: boolean, now: number, buildingColliders?: THREE.Box3[], enemies?: AIPlane[]): InputState {
+    // Resolve the actual target position (player or another AI)
+    let resolvedTargetPos = playerPos;
+    if (enemy.targetId !== null && enemies) {
+      const aiTarget = enemies.find(e => e.id === enemy.targetId && e.alive);
+      resolvedTargetPos = aiTarget ? aiTarget.physics.position : playerPos;
+    }
     const input: InputState = {
       pitch: 0,
       yaw: 0,
@@ -304,11 +338,11 @@ export class CombatManager {
         input.throttle = 0.5;
         break;
       case 'chase':
-        targetPoint = playerPos;
+        targetPoint = resolvedTargetPos;
         input.throttle = 0.55;
         break;
       case 'attack':
-        targetPoint = playerPos;
+        targetPoint = resolvedTargetPos;
         input.throttle = 0.60;
         break;
       case 'evade':
@@ -438,13 +472,19 @@ export class CombatManager {
     
     // Fire when attacking and aimed at player.
     // Engagement range raised to 120m so they shoot from distance rather than closing in.
-    if (enemy.behavior === 'attack' && playerAlive) {
-      const aimDot = _forward.dot(_toTarget);
-      if (aimDot > 0.88 && distToPlayer > HARD_BREAKOFF && distToPlayer < 120) {
-        const fireInterval = 1 / enemy.aircraftDef.weaponFireRate;
-        if (now - enemy.lastFireTime > fireInterval * 1000) {
-          input.fire = true;
-          enemy.lastFireTime = now;
+    if (enemy.behavior === 'attack') {
+      const isAIVsAI  = enemy.targetId !== null;
+      const targetOk  = isAIVsAI || playerAlive;
+      if (targetOk) {
+        const aimDot     = _forward.dot(_toTarget);
+        const distTarget = enemy.physics.position.distanceTo(resolvedTargetPos);
+        const minDist    = isAIVsAI ? 10 : HARD_BREAKOFF;
+        if (aimDot > 0.88 && distTarget > minDist && distTarget < 120) {
+          const fireInterval = 1 / enemy.aircraftDef.weaponFireRate;
+          if (now - enemy.lastFireTime > fireInterval * 1000) {
+            input.fire = true;
+            enemy.lastFireTime = now;
+          }
         }
       }
     }
@@ -476,6 +516,10 @@ export class CombatManager {
     enemy.labelSprite.visible = false;
     // Release attacker lock so another plane can engage
     if (this.attackerId === enemy.id) this.attackerId = null;
+    // Clear any AI that was targeting this enemy
+    for (const e of this.enemies) {
+      if (e.targetId === enemy.id) e.targetId = null;
+    }
     
     if (now !== undefined) {
       this.killFeed.push({
@@ -497,7 +541,9 @@ export class CombatManager {
     const heading = Math.atan2(-enemy.physics.position.x, -enemy.physics.position.z);
     enemy.physics.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), heading);
     enemy.physics.speed = enemy.aircraftDef.speedCruise;
+    enemy.physics.velocity.set(0, 0, 0);
     enemy.health = enemy.maxHealth;
+    enemy.targetId = null;
     enemy.alive = true;
     enemy.mesh.visible = true;
     enemy.labelSprite.visible = true;
@@ -515,6 +561,28 @@ export class CombatManager {
     enemy.patrolAltitude = 50 + Math.random() * 80;
   }
   
+  // Check if an AI tracer hits any other AI enemy (friendly fire / dogfights)
+  checkAITracerHits(
+    tracerPos: THREE.Vector3,
+    ownerEnemyId: string,
+    damage: number,
+    onHit: (enemy: AIPlane, position: THREE.Vector3) => void
+  ): boolean {
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      if (enemy.id === ownerEnemyId) continue;
+      if (tracerPos.distanceTo(enemy.physics.position) < 5) {
+        enemy.health -= damage;
+        if (enemy.health <= 0) {
+          const deathPos = this.killEnemy(enemy, 'shot down in a dogfight', performance.now());
+          if (deathPos) onHit(enemy, deathPos);
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Check if any tracer hits an enemy
   checkTracerHits(
     tracerPos: THREE.Vector3,
