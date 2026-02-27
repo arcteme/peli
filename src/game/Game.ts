@@ -379,6 +379,23 @@ export class Game {
       }
     );
     
+    // --- Smoke trails (damage-proportional, updated every frame) ---
+    if (this.combat.playerAlive) {
+      this.effects.setPlaneSmoke(
+        'player', this.playerPhysics.position,
+        this.combat.playerHealth / this.combat.playerMaxHealth
+      );
+    } else {
+      this.effects.clearPlaneSmoke('player');
+    }
+    for (const enemy of this.combat.enemies) {
+      if (enemy.alive) {
+        this.effects.setPlaneSmoke(enemy.id, enemy.physics.position, enemy.health / enemy.maxHealth);
+      } else {
+        this.effects.clearPlaneSmoke(enemy.id);
+      }
+    }
+
     // --- Effects / Bullet collisions ---
     const activeTracers = this.effects.update(dt);
     
