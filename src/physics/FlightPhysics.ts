@@ -6,6 +6,10 @@ const _forward  = new THREE.Vector3();
 const _up       = new THREE.Vector3(0, 1, 0);
 const _tempQuat = new THREE.Quaternion();
 const _euler    = new THREE.Euler();
+// Reusable rotation axes — avoids per-frame heap allocations
+const _axisX    = new THREE.Vector3(1, 0, 0);
+const _axisY    = new THREE.Vector3(0, 1, 0);
+const _axisZ    = new THREE.Vector3(0, 0, 1);
 
 export class FlightPhysics {
   position:   THREE.Vector3;
@@ -86,15 +90,15 @@ export class FlightPhysics {
     const effYaw   = input.yaw   * authority;
 
     if (Math.abs(effPitch) > 0.01) {
-      _tempQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -effPitch * def.pitchRate * dt);
+      _tempQuat.setFromAxisAngle(_axisX, -effPitch * def.pitchRate * dt);
       this.quaternion.multiply(_tempQuat);
     }
     if (Math.abs(effYaw) > 0.01) {
-      _tempQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -effYaw * def.yawRate * dt);
+      _tempQuat.setFromAxisAngle(_axisY, -effYaw * def.yawRate * dt);
       this.quaternion.multiply(_tempQuat);
     }
     if (Math.abs(effRoll) > 0.01) {
-      _tempQuat.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -effRoll * def.rollRate * dt);
+      _tempQuat.setFromAxisAngle(_axisZ, -effRoll * def.rollRate * dt);
       this.quaternion.multiply(_tempQuat);
     }
 
@@ -104,7 +108,7 @@ export class FlightPhysics {
       const stallSeverity = THREE.MathUtils.clamp(
         1 - this.speed / this.stallSpeed, 0, 1
       );
-      _tempQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), stallSeverity * 1.5 * dt);
+      _tempQuat.setFromAxisAngle(_axisX, stallSeverity * 1.5 * dt);
       this.quaternion.multiply(_tempQuat);
     }
 

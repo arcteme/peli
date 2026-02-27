@@ -4,6 +4,7 @@ import { AIRCRAFT, AI_SPAWN_POINTS, AI_PILOT_NAMES, PHYSICS } from '../shared/co
 
 import { FlightPhysics } from '../physics/FlightPhysics';
 import { createAircraftModel } from '../entities/AircraftModel';
+import { CityMap } from '../world/CityMap';
 
 interface AIPlane {
   id: string;
@@ -29,9 +30,19 @@ interface AIPlane {
   lastFireTime: number;
 }
 
-const _tempVec = new THREE.Vector3();
-const _toTarget = new THREE.Vector3();
-const _forward = new THREE.Vector3();
+const _tempVec   = new THREE.Vector3();
+const _toTarget  = new THREE.Vector3();
+const _forward   = new THREE.Vector3();
+// AI-specific scratch objects — avoids per-enemy, per-frame heap allocations.
+const _aiRight          = new THREE.Vector3();
+const _aiUp             = new THREE.Vector3();
+const _awayWorld        = new THREE.Vector3();
+const _probePos         = new THREE.Vector3();
+const _closestPt        = new THREE.Vector3();
+const _awayVec          = new THREE.Vector3();
+const _avoidance        = new THREE.Vector3();
+const _aiBuildingBox    = new THREE.Box3();
+const _aiBuildingSize   = new THREE.Vector3();
 
 export class CombatManager {
   private scene: THREE.Scene;
@@ -131,7 +142,7 @@ export class CombatManager {
     playerPosition: THREE.Vector3,
     playerQuaternion: THREE.Quaternion,
     playerAlive: boolean,
-    buildingColliders: THREE.Box3[],
+    cityMap: CityMap,
     now: number,
     onEnemyFire?: (position: THREE.Vector3, direction: THREE.Vector3, damage: number, ownerId: string) => void,
     onEnemyKilled?: (position: THREE.Vector3) => void
@@ -182,7 +193,7 @@ export class CombatManager {
       }
       
       // Generate AI input (with building avoidance)
-      const input = this.generateAIInput(enemy, playerPosition, playerAlive, now, buildingColliders, this.enemies);
+      const input = this.generateAIInput(enemy, playerPosition, playerAlive, now, cityMap, this.enemies);
       
       // Force AI back if way out of bounds (physics boundary is 450m; give AI some margin)
       const distFromCenter = Math.sqrt(
@@ -207,7 +218,7 @@ export class CombatManager {
       }
       
       // Building collision
-      if (this.checkBuildingCollision(enemy.physics.position, buildingColliders)) {
+      if (this.checkBuildingCollision(enemy.physics.position, cityMap)) {
         const pos = this.killEnemy(enemy, 'crashed into a building', now);
         if (pos && onEnemyKilled) onEnemyKilled(pos);
         continue;
@@ -314,7 +325,7 @@ export class CombatManager {
     }
   }
   
-  private generateAIInput(enemy: AIPlane, playerPos: THREE.Vector3, playerAlive: boolean, now: number, buildingColliders?: THREE.Box3[], enemies?: AIPlane[]): InputState {
+  private generateAIInput(enemy: AIPlane, playerPos: THREE.Vector3, playerAlive: boolean, now: number, cityMap?: CityMap, enemies?: AIPlane[]): InputState {
     // Resolve the actual target position (player or another AI)
     let resolvedTargetPos = playerPos;
     if (enemy.targetId !== null && enemies) {
@@ -367,17 +378,16 @@ export class CombatManager {
     // Calculate steering toward target
     _toTarget.copy(targetPoint).sub(enemy.physics.position).normalize();
     _forward.set(0, 0, 1).applyQuaternion(enemy.physics.quaternion);
+    // Compute right/up once — reused in breakoff and avoidance blocks too.
+    _aiRight.set(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
+    _aiUp.set(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
     
     // Decompose into pitch and yaw components
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
-    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
-    
-    // Pitch: positive pitchDot = target is above in local space = pitch nose up (positive)
-    const pitchDot = _toTarget.dot(up);
+    const pitchDot = _toTarget.dot(_aiUp);
     input.pitch = pitchDot * 1.2;  // was 2.0 — gentler, less agile
     
     // Roll/Yaw: positive yawDot = target is to the right = bank right to turn right (+roll)
-    const yawDot = _toTarget.dot(right);
+    const yawDot = _toTarget.dot(_aiRight);
     input.roll = yawDot * 0.9;     // was 1.5 — slower bank
     input.yaw = -yawDot * 0.3;
     
@@ -388,15 +398,13 @@ export class CombatManager {
     const distToPlayer = enemy.physics.position.distanceTo(playerPos);
     if ((enemy.behavior === 'attack' || enemy.behavior === 'chase') && distToPlayer < BREAKOFF_DIST) {
       // Direction away from player in world space
-      const awayWorld = enemy.physics.position.clone().sub(playerPos).normalize();
+      _awayWorld.copy(enemy.physics.position).sub(playerPos).normalize();
       // Always climb during break-off
-      awayWorld.y = Math.max(awayWorld.y, 0.4);
-      awayWorld.normalize();
+      _awayWorld.y = Math.max(_awayWorld.y, 0.4);
+      _awayWorld.normalize();
       
-      const rightDir = new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
-      const upDir    = new THREE.Vector3(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
-      const breakPitch = awayWorld.dot(upDir)  * 2.5;
-      const breakRoll  = awayWorld.dot(rightDir) * 2.0;
+      const breakPitch = _awayWorld.dot(_aiUp)    * 2.5;
+      const breakRoll  = _awayWorld.dot(_aiRight) * 2.0;
       
       // Blend weight: full override inside HARD_BREAKOFF, linear fade out to BREAKOFF_DIST
       const blend = 1 - Math.max(0, (distToPlayer - HARD_BREAKOFF) / (BREAKOFF_DIST - HARD_BREAKOFF));
@@ -407,50 +415,45 @@ export class CombatManager {
     }
     
     // --- Building avoidance ---
-    if (buildingColliders) {
+    if (cityMap) {
       const pos = enemy.physics.position;
-      const fwd = _forward.clone();
       const lookAhead = 30 + enemy.physics.speed * 0.3; // look further at higher speed
-      const avoidance = new THREE.Vector3();
+      _avoidance.set(0, 0, 0);
       let needsAvoid = false;
-      
-      // Check ahead and slightly to the sides
-      for (const offset of [
-        fwd.clone().multiplyScalar(lookAhead),
-        fwd.clone().multiplyScalar(lookAhead).add(new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion).multiplyScalar(8)),
-        fwd.clone().multiplyScalar(lookAhead).add(new THREE.Vector3(-1, 0, 0).applyQuaternion(enemy.physics.quaternion).multiplyScalar(8)),
-      ]) {
-        const testPos = pos.clone().add(offset);
-        for (const collider of buildingColliders) {
-          const closest = new THREE.Vector3();
-          collider.clampPoint(testPos, closest);
-          const dist = testPos.distanceTo(closest);
+
+      // Helper: test one probe position against nearby buildings (grid-accelerated).
+      const checkProbe = (px: number, py: number, pz: number) => {
+        _probePos.set(px, py, pz);
+        for (const collider of cityMap.queryBuildings(_probePos, 15)) {
+          collider.clampPoint(_probePos, _closestPt);
+          const dist = _probePos.distanceTo(_closestPt);
           if (dist < 15) {
-            // Push away from this building
-            const away = testPos.clone().sub(closest).normalize();
-            const urgency = (15 - dist) / 15;
-            avoidance.add(away.multiplyScalar(urgency * 2));
+            _awayVec.copy(_probePos).sub(_closestPt).normalize();
+            _avoidance.addScaledVector(_awayVec, (15 - dist) / 15 * 2);
             needsAvoid = true;
           }
         }
-      }
-      
+      };
+
+      // 3 probes: straight ahead, ahead+right, ahead-left
+      const fx = _forward.x * lookAhead, fy = _forward.y * lookAhead, fz = _forward.z * lookAhead;
+      checkProbe(pos.x + fx,                   pos.y + fy, pos.z + fz);
+      checkProbe(pos.x + fx + _aiRight.x * 8,  pos.y + fy + _aiRight.y * 8,  pos.z + fz + _aiRight.z * 8);
+      checkProbe(pos.x + fx - _aiRight.x * 8,  pos.y + fy - _aiRight.y * 8,  pos.z + fz - _aiRight.z * 8);
+
       if (needsAvoid) {
         // Steer upward and away from buildings
-        avoidance.y = Math.max(avoidance.y, 1.0); // always prefer climbing
-        avoidance.normalize();
-        
-        const rightDir = new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
-        const upDir = new THREE.Vector3(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
+        _avoidance.y = Math.max(_avoidance.y, 1.0); // always prefer climbing
+        _avoidance.normalize();
         
         // Signs match main steering: pitch positive = up, roll positive = bank right
-        const avoidPitch = avoidance.dot(upDir) * 3;
-        const avoidRoll = avoidance.dot(rightDir) * 2;
+        const avoidPitch = _avoidance.dot(_aiUp)    * 3;
+        const avoidRoll  = _avoidance.dot(_aiRight) * 2;
         
         // Blend avoidance in heavily (override normal steering)
         input.pitch = input.pitch * 0.3 + avoidPitch * 0.7;
-        input.roll = input.roll * 0.3 + avoidRoll * 0.7;
-        input.yaw *= 0.3;
+        input.roll  = input.roll  * 0.3 + avoidRoll  * 0.7;
+        input.yaw  *= 0.3;
       }
       
       // Ensure minimum altitude — positive pitch = nose UP
@@ -492,18 +495,12 @@ export class CombatManager {
     return input;
   }
   
-  private checkBuildingCollision(position: THREE.Vector3, colliders: THREE.Box3[]): boolean {
+  private checkBuildingCollision(position: THREE.Vector3, cityMap: CityMap): boolean {
     // Use a generous 2m sphere approximation so fast-moving planes with
     // velocity momentum can't slip through a building in a single frame.
-    const playerBox = new THREE.Box3().setFromCenterAndSize(
-      position,
-      new THREE.Vector3(2.0, 1.0, 2.0)
-    );
-    
-    for (const collider of colliders) {
-      if (playerBox.intersectsBox(collider)) {
-        return true;
-      }
+    _aiBuildingBox.setFromCenterAndSize(position, _aiBuildingSize.set(2.0, 1.0, 2.0));
+    for (const collider of cityMap.queryBuildings(position, 3)) {
+      if (_aiBuildingBox.intersectsBox(collider)) return true;
     }
     return false;
   }

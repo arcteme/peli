@@ -361,7 +361,7 @@ export class Game {
       this.playerPhysics.position,
       this.playerPhysics.quaternion,
       this.combat.playerAlive,
-      this.cityMap.colliders,
+      this.cityMap,
       now,
       (position, direction, damage, ownerId) => {
         // Enemy fires — add generous spread so they're lousy shots

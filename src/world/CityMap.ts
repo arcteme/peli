@@ -46,6 +46,65 @@ const MAT_DECIDUOUS  = new THREE.MeshLambertMaterial({ color: 0x5a8a30 }); // fr
 
 
 
+const _EMPTY_BOXES: THREE.Box3[] = [];
+
+/**
+ * Lightweight 2-D spatial hash for building Box3 colliders.
+ * Cells are _cellSize × _cellSize metres in XZ; Y is ignored for binning.
+ * Lookup cost is O(cells_touched) ≪ O(236) for small query radii.
+ */
+class BuildingGrid {
+  private readonly _cells    = new Map<number, THREE.Box3[]>();
+  private readonly _cellSize: number;
+
+  constructor(colliders: THREE.Box3[], cellSize = 50) {
+    this._cellSize = cellSize;
+    for (const box of colliders) {
+      const x0 = Math.floor(box.min.x / cellSize);
+      const z0 = Math.floor(box.min.z / cellSize);
+      const x1 = Math.floor(box.max.x / cellSize);
+      const z1 = Math.floor(box.max.z / cellSize);
+      for (let cx = x0; cx <= x1; cx++) {
+        for (let cz = z0; cz <= z1; cz++) {
+          // Pack two 16-bit signed ints into one 32-bit int for a fast Map key.
+          const key = ((cx + 512) & 0xffff) << 16 | ((cz + 512) & 0xffff);
+          let cell = this._cells.get(key);
+          if (!cell) { cell = []; this._cells.set(key, cell); }
+          cell.push(box);
+        }
+      }
+    }
+  }
+
+  /**
+   * Return all Box3s whose grid cell(s) overlap the circle
+   * (position.x ± radius, position.z ± radius).
+   * Duplicates are possible when a box spans multiple cells — callers must
+   * tolerate that (intersectsBox is idempotent so collision is still correct).
+   */
+  query(position: THREE.Vector3, radius: number): THREE.Box3[] {
+    const cs = this._cellSize;
+    const x0 = Math.floor((position.x - radius) / cs);
+    const z0 = Math.floor((position.z - radius) / cs);
+    const x1 = Math.floor((position.x + radius) / cs);
+    const z1 = Math.floor((position.z + radius) / cs);
+
+    // Fast path: single cell
+    if (x0 === x1 && z0 === z1) {
+      return this._cells.get(((x0 + 512) & 0xffff) << 16 | ((z0 + 512) & 0xffff)) ?? _EMPTY_BOXES;
+    }
+
+    const results: THREE.Box3[] = [];
+    for (let cx = x0; cx <= x1; cx++) {
+      for (let cz = z0; cz <= z1; cz++) {
+        const cell = this._cells.get(((cx + 512) & 0xffff) << 16 | ((cz + 512) & 0xffff));
+        if (cell) for (const b of cell) results.push(b);
+      }
+    }
+    return results;
+  }
+}
+
 export class CityMap {
   public group:     THREE.Group  = new THREE.Group();
   public colliders: THREE.Box3[] = [];
@@ -62,6 +121,12 @@ export class CityMap {
   private _terrainRows = 101;
   private _terrainHalf = 550;
   private _renderer: THREE.WebGLRenderer | null = null;
+
+  // Scratch objects reused every frame — never reallocated in hot paths.
+  private readonly _scratchBox  = new THREE.Box3();
+  private readonly _scratchSize = new THREE.Vector3();
+  private readonly _scratchPt   = new THREE.Vector3();
+  private _grid: BuildingGrid | null = null;
 
   constructor(renderer?: THREE.WebGLRenderer) {
     this._renderer = renderer ?? null;
@@ -125,6 +190,7 @@ export class CityMap {
     }
 
     this.loaded = true;
+    this._buildGrid();
     console.log(`[CityMap] Loaded ${meta.buildingCount} buildings | ${this.colliders.length} colliders`);
   }
 
@@ -240,10 +306,15 @@ export class CityMap {
     mesh.rotation.x    = -Math.PI / 2;
     mesh.receiveShadow = true;
     // Calibration from TextureCalibrator tool (F4) — paste the 3 lines from the exit snippet here
-    mesh.position.x    = 34.0;      // offsetX  (metres)
-    mesh.position.z    = -78.0;     // offsetZ  (metres)
-    mesh.rotation.z    = -0.069813; // rotation (RADIANS) = -4.00°
-    mesh.scale.set(1.0, 1.0, 1.0);  // scale — adjust with [ / ] in F4 calibrator
+    //mesh.position.x    = 34.0;      // offsetX  (metres)
+    //mesh.position.z    = -78.0;     // offsetZ  (metres)
+    //mesh.rotation.z    = -0.069813; // rotation (RADIANS) = -4.00°
+    //mesh.scale.set(1.0, 1.0, 1.0);  // scale — adjust with [ / ] in F4 calibrator
+    mesh.position.x = 66.0;
+    mesh.position.z = -20.0;
+    mesh.rotation.z = -0.069813;
+    mesh.scale.set(1.430000, 1.430000, 1.430000);
+
     this.aerialMesh    = mesh;
     this.group.add(mesh);
 
@@ -470,9 +541,8 @@ export class CityMap {
         ),
       );
     }
+    this._buildGrid();
   }
-
-  // ── Dev: aerial texture positioning ──────────────────────────────────────
 
   /** Move the ground/aerial mesh in XZ — used by TextureCalibrator to align the photo. */
   setAerialOffset(x: number, z: number): void {
@@ -503,25 +573,36 @@ export class CityMap {
 
   // ── Public collision API ───────────────────────────────────────────────────
 
+  /** Return the Box3s whose grid cell overlaps the given position+radius. */
+  queryBuildings(position: THREE.Vector3, radius: number): THREE.Box3[] {
+    return this._grid ? this._grid.query(position, radius) : this.colliders;
+  }
+
   checkCollision(position: THREE.Vector3, radius = 3): boolean {
-    const box = new THREE.Box3().setFromCenterAndSize(
+    this._scratchBox.setFromCenterAndSize(
       position,
-      new THREE.Vector3(radius * 2, radius * 2, radius * 2),
+      this._scratchSize.set(radius * 2, radius * 2, radius * 2),
     );
-    for (const col of this.colliders) {
-      if (box.intersectsBox(col)) return true;
+    for (const col of this.queryBuildings(position, radius)) {
+      if (this._scratchBox.intersectsBox(col)) return true;
     }
     return false;
   }
 
   getNearestBuildingDistance(position: THREE.Vector3): number {
     let minDist = Infinity;
-    const pt = new THREE.Vector3();
-    for (const col of this.colliders) {
-      col.clampPoint(position, pt);
-      const d = position.distanceTo(pt);
+    for (const col of this.queryBuildings(position, 80)) {
+      col.clampPoint(position, this._scratchPt);
+      const d = position.distanceTo(this._scratchPt);
       if (d < minDist) minDist = d;
     }
     return minDist;
+  }
+
+  // ── Private grid management ────────────────────────────────────────────────
+
+  private _buildGrid(): void {
+    this._grid = new BuildingGrid(this.colliders);
+    console.log(`[CityMap] BuildingGrid ready — ${this.colliders.length} colliders, cell size 50 m`);
   }
 }
