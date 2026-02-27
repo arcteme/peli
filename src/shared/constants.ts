@@ -18,7 +18,7 @@ export const WORLD_SCALE = 0.1;
 // Flight physics constants
 export const PHYSICS = {
   autoLevelStrength: 0.3,   // how quickly plane returns to level (rad/s)
-  dragCoefficient: 0.009,   // quadratic drag — balanced so 50% throttle ≈ cruise equilibrium
+  dragCoefficient: 0.0045,  // quadratic drag — balanced so full throttle ≈ 180 km/h level flight
   gravityEffect: 1.0,       // energy exchange: diving gains speed, climbing bleeds it
   minAltitude: 1,           // floor height in meters (model flies very low)
   maxAltitude: 500,         // ceiling
@@ -77,9 +77,9 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     country: 'Japan',
     countryFlag: '🇯🇵',
     speedMin: 9,
-    speedMax: 36,
-    speedCruise: 21,
-    acceleration: 7.5,
+    speedMax: 52,
+    speedCruise: 35,
+    acceleration: 11.25,
     pitchRate: 2.5,
     yawRate: 1.2,
     rollRate: 3.5,
@@ -96,9 +96,9 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     country: 'United Kingdom',
     countryFlag: '🇬🇧',
     speedMin: 10.5,
-    speedMax: 39,
-    speedCruise: 22.5,
-    acceleration: 8.4,
+    speedMax: 56,
+    speedCruise: 38,
+    acceleration: 12.6,
     pitchRate: 2.2,
     yawRate: 1.0,
     rollRate: 3.8,
@@ -115,9 +115,9 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     country: 'Germany',
     countryFlag: '🇩🇪',
     speedMin: 10.5,
-    speedMax: 42,
-    speedCruise: 24,
-    acceleration: 9,
+    speedMax: 60,
+    speedCruise: 40,
+    acceleration: 13.5,
     pitchRate: 2.0,
     yawRate: 0.9,
     rollRate: 3.2,
