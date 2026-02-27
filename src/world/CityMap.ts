@@ -243,6 +243,7 @@ export class CityMap {
     mesh.position.x    = 34.0;      // offsetX  (metres)
     mesh.position.z    = -78.0;     // offsetZ  (metres)
     mesh.rotation.z    = -0.069813; // rotation (RADIANS) = -4.00°
+    mesh.scale.set(1.0, 1.0, 1.0);  // scale — adjust with [ / ] in F4 calibrator
     this.aerialMesh    = mesh;
     this.group.add(mesh);
 
@@ -490,6 +491,14 @@ export class CityMap {
 
   getAerialRotation(): number {
     return this.aerialMesh.rotation.z;
+  }
+
+  setAerialScale(s: number): void {
+    this.aerialMesh.scale.set(s, s, s);
+  }
+
+  getAerialScale(): number {
+    return this.aerialMesh.scale.x;
   }
 
   // ── Public collision API ───────────────────────────────────────────────────

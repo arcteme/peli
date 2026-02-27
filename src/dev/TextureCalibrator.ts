@@ -27,6 +27,7 @@ export class TextureCalibrator {
   private offsetX = 0;
   private offsetZ = 0;
   private rotationY = 0; // radians, rotation around world Y axis
+  private scale = 1.0;   // uniform XZ scale of the ground mesh
 
   private savedFog: THREE.Fog | THREE.FogExp2 | null = null;
 
@@ -79,6 +80,7 @@ export class TextureCalibrator {
     this.offsetX   = cur.x;
     this.offsetZ   = cur.z;
     this.rotationY = this.cityMap.getAerialRotation();
+    this.scale     = this.cityMap.getAerialScale();
 
     this._updateCamera();
     this.fillMesh.visible = true;
@@ -148,19 +150,23 @@ export class TextureCalibrator {
 
     const step = e.shiftKey ? 0.2 : 2;
     const rotStep = e.shiftKey ? (0.1 * Math.PI / 180) : (0.5 * Math.PI / 180);
+    const scaleStep = e.shiftKey ? 0.001 : 0.01;
     switch (e.code) {
-      case 'ArrowLeft':  e.preventDefault(); e.stopPropagation(); this.offsetX -= step; break;
-      case 'ArrowRight': e.preventDefault(); e.stopPropagation(); this.offsetX += step; break;
-      case 'ArrowUp':    e.preventDefault(); e.stopPropagation(); this.offsetZ -= step; break;
-      case 'ArrowDown':  e.preventDefault(); e.stopPropagation(); this.offsetZ += step; break;
-      case 'KeyQ':       e.preventDefault(); this.rotationY -= rotStep; break; // counterclockwise
-      case 'KeyE':       e.preventDefault(); this.rotationY += rotStep; break; // clockwise
-      case 'KeyR':       this.offsetX = 0; this.offsetZ = 0; this.rotationY = 0; break;
-      default: return; // nothing changed
+      case 'ArrowLeft':    e.preventDefault(); e.stopPropagation(); this.offsetX -= step; break;
+      case 'ArrowRight':   e.preventDefault(); e.stopPropagation(); this.offsetX += step; break;
+      case 'ArrowUp':      e.preventDefault(); e.stopPropagation(); this.offsetZ -= step; break;
+      case 'ArrowDown':    e.preventDefault(); e.stopPropagation(); this.offsetZ += step; break;
+      case 'KeyQ':         e.preventDefault(); this.rotationY -= rotStep; break;
+      case 'KeyE':         e.preventDefault(); this.rotationY += rotStep; break;
+      case 'BracketLeft':  e.preventDefault(); this.scale = Math.max(0.1, this.scale - scaleStep); break; // shrink
+      case 'BracketRight': e.preventDefault(); this.scale += scaleStep; break; // grow
+      case 'KeyR':         this.offsetX = 0; this.offsetZ = 0; this.rotationY = 0; this.scale = 1.0; break;
+      default: return;
     }
 
     this.cityMap.setAerialOffset(this.offsetX, this.offsetZ);
     this.cityMap.setAerialRotation(this.rotationY);
+    this.cityMap.setAerialScale(this.scale);
     this._refreshHUD();
   };
 
@@ -220,7 +226,8 @@ export class TextureCalibrator {
         <br>
         <span style="color:#aaa; font-size:12px;">
           Arrow = &plusmn;2 m &nbsp;|&nbsp; Shift+Arrow = &plusmn;0.2 m &nbsp;|&nbsp;
-          Q/E = &plusmn;0.5&deg; &nbsp;|&nbsp; Shift+Q/E = &plusmn;0.1&deg; &nbsp;|&nbsp; R = reset all
+          Q/E = &plusmn;0.5&deg; &nbsp;|&nbsp; Shift+Q/E = &plusmn;0.1&deg; &nbsp;|&nbsp;
+          [ / ] = &plusmn;1% scale &nbsp;|&nbsp; Shift+[ / ] = &plusmn;0.1% scale &nbsp;|&nbsp; R = reset all
         </span>
         <br>
         X: <b style="color:#55ddff">${fmtN(this.offsetX)} m</b>
@@ -228,6 +235,8 @@ export class TextureCalibrator {
         Z: <b style="color:#55ddff">${fmtN(this.offsetZ)} m</b>
         &nbsp;&nbsp;
         Rot: <b style="color:#ffaa44">${fmtDeg(this.rotationY)}</b>
+        &nbsp;&nbsp;
+        Scale: <b style="color:#aaffaa">${this.scale.toFixed(4)}&times;</b>
       </div>
 
       <!-- Crosshair at world origin -->
@@ -298,12 +307,13 @@ export class TextureCalibrator {
       '║         AERIAL TEXTURE CALIBRATION — COPY RESULT            ║',
       `║  Generated: ${ts}                    ║`,
       '╠══════════════════════════════════════════════════════════════╣',
-      '║  In CityMap._createGround(), replace the 3 calibration      ║',
+      '║  In CityMap._createGround(), replace the 4 calibration      ║',
       '║  lines with exactly the following (numbers only, no edits): ║',
       '╠══════════════════════════════════════════════════════════════╣',
       `  mesh.position.x = ${fmtV(this.offsetX)};`,
       `  mesh.position.z = ${fmtV(this.offsetZ)};`,
       `  mesh.rotation.z = ${this.rotationY.toFixed(6)};`,
+      `  mesh.scale.set(${this.scale.toFixed(6)}, ${this.scale.toFixed(6)}, ${this.scale.toFixed(6)});`,
       '╠══════════════════════════════════════════════════════════════╣',
       `║  (rotation in RADIANS = ${(this.rotationY * 180 / Math.PI).toFixed(2)}°  —  paste the .toFixed(6) number above, NOT the degrees)`,
       '╚══════════════════════════════════════════════════════════════╝',
