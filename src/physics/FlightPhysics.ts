@@ -161,7 +161,7 @@ export class FlightPhysics {
   // Get gun muzzle position (front of aircraft)
   getMuzzlePosition(): THREE.Vector3 {
     const fwd = this.getForward();
-    return this.position.clone().addScaledVector(fwd, 5);
+    return this.position.clone().addScaledVector(fwd, 0.5);
   }
   
   getAltitude(): number {

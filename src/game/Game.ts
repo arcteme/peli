@@ -11,6 +11,7 @@ import { EffectsManager } from '../effects/EffectsManager';
 import { AudioManager } from '../audio/AudioManager';
 import { CombatManager } from '../combat/CombatManager';
 import { HUD } from '../ui/HUD';
+import { TextureCalibrator } from '../dev/TextureCalibrator';
 
 export class Game {
   // Core
@@ -43,6 +44,9 @@ export class Game {
   // State
   private running = false;
   private audioInitialized = false;
+
+  // Texture-alignment calibration tool (F4 to toggle)
+  private calibrator!: TextureCalibrator;
 
   // Free-fly inspector mode (F3 to toggle)
   private inspectorMode = false;
@@ -79,9 +83,12 @@ export class Game {
     // World
     this.cityMap = new CityMap();
     this.scene.add(this.cityMap.group);
-    
+
     this.sky = new Sky(this.scene);
     this.scene.add(this.sky.group);
+
+    // Dev calibration tool — created here so it can inject its fill mesh into the scene
+    this.calibrator = new TextureCalibrator(this.scene, this.cityMap, this.sky);
     
     // Effects
     this.effects = new EffectsManager(this.scene);
@@ -100,12 +107,14 @@ export class Game {
     });
 
     // Inspector mode toggle (F3) — dev fly-camera
+    // Calibration tool toggle (F4) — texture alignment
     window.addEventListener('keydown', (e) => {
       if (e.code === 'F3') {
         e.preventDefault();
+        // Exit calibration if it was active when F3 is pressed
+        if (this.calibrator.isActive()) this.calibrator.deactivate();
         this.inspectorMode = !this.inspectorMode;
         if (this.inspectorMode) {
-          // Seed position/orientation from current camera
           this.inspectorPos.copy(this.cameraManager.camera.position);
           const euler = new THREE.Euler().setFromQuaternion(this.cameraManager.camera.quaternion, 'YXZ');
           this.inspectorYaw   = euler.y;
@@ -113,6 +122,22 @@ export class Game {
           this.hud.showMessage('Inspector mode ON — WASD fly, Shift=fast, F3 exit', 3000);
         } else {
           this.hud.showMessage('Inspector mode OFF', 1500);
+        }
+      }
+
+      if (e.code === 'F4') {
+        e.preventDefault();
+        if (this.calibrator.isActive()) {
+          this.calibrator.deactivate();
+          this.hud.showMessage('Texture calibrator OFF', 1500);
+        } else {
+          // Exit inspector if active so the two dev modes don\'t overlap
+          if (this.inspectorMode) {
+            this.inspectorMode = false;
+            this.hud.showMessage('', 0);
+          }
+          this.calibrator.activate();
+          this.hud.showMessage('Texture calibrator ON — Arrow keys to move, F4 to exit', 3000);
         }
       }
     });
@@ -210,6 +235,9 @@ export class Game {
   };
   
   private update(dt: number, now: number) {
+    // --- Texture calibrator (F4) — suspends the normal game loop ---
+    if (this.calibrator.isActive()) return;
+
     // --- Inspector (free-fly dev camera) ---
     if (this.inspectorMode) {
       this._updateInspector(dt);
@@ -246,7 +274,7 @@ export class Game {
       this.playerPhysics.update(input, dt);
       
       // Building collision
-      if (this.cityMap.checkCollision(this.playerPhysics.position, 2.5)) {
+      if (this.cityMap.checkCollision(this.playerPhysics.position, 0.5)) {
         this.combat.killPlayer();
         this.effects.spawnExplosion(this.playerPhysics.position.clone());
         this.audioManager.playExplosion();
@@ -412,7 +440,11 @@ export class Game {
   }
   
   private render() {
-    this.renderer.render(this.scene, this.cameraManager.camera);
+    if (this.calibrator.isActive()) {
+      this.calibrator.render(this.renderer);
+    } else {
+      this.renderer.render(this.scene, this.cameraManager.camera);
+    }
   }
   
   dispose() {

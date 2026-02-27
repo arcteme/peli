@@ -9,13 +9,13 @@ export class CameraManager {
   public camera: THREE.PerspectiveCamera;
   public mode: CameraMode = 'chase';
   
-  // Chase camera settings
-  private chaseOffset = new THREE.Vector3(0, 4, -14);
-  private chaseLookAhead = 10;
+  // Chase camera settings — scaled for 1:10 model aircraft
+  private chaseOffset = new THREE.Vector3(0, 0.8, -3.5);
+  private chaseLookAhead = 2;
   private chaseSmoothFactor = 4.0;
   
-  // Cockpit settings
-  private cockpitOffset = new THREE.Vector3(0, 0.8, 1.0);
+  // Cockpit settings — eye positioned just above fuselage centreline
+  private cockpitOffset = new THREE.Vector3(0, 0.09, 0.05);
   
   // Transition
   private isTransitioning = false;
@@ -32,7 +32,7 @@ export class CameraManager {
   public cockpitInterior: THREE.Group | null = null;
   
   constructor(aspect: number) {
-    this.camera = new THREE.PerspectiveCamera(70, aspect, 0.5, 2000);
+    this.camera = new THREE.PerspectiveCamera(70, aspect, 0.05, 2000);
   }
   
   toggleMode() {
@@ -158,7 +158,7 @@ export class CameraManager {
     this.camera.up.set(0, 1, 0).applyQuaternion(targetQuaternion);
     
     // Look forward from the plane
-    _idealLookAt.set(0, 0, 20).applyQuaternion(targetQuaternion).add(targetPosition);
+    _idealLookAt.set(0, 0, 5).applyQuaternion(targetQuaternion).add(targetPosition);
     this.camera.lookAt(_idealLookAt);
   }
   

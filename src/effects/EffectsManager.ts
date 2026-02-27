@@ -41,8 +41,8 @@ export class EffectsManager {
       opacity: 0.6 
     });
     
-    // Pre-create tracer meshes
-    const tracerGeo = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 4);
+    // Pre-create tracer meshes (scaled for 1:10 model aircraft)
+    const tracerGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 4);
     tracerGeo.rotateX(Math.PI / 2);
     for (let i = 0; i < this.maxTracers; i++) {
       const mesh = new THREE.Mesh(tracerGeo, this.tracerMat);
@@ -69,15 +69,15 @@ export class EffectsManager {
     this.tracers.push({
       mesh,
       direction: direction.clone().normalize(),
-      speed: 300,
-      life: 1.5,
+      speed: 50,
+      life: 2.0,
       ownerId,
       damage,
     });
   }
   
   spawnMuzzleFlash(position: THREE.Vector3) {
-    const flashGeo = new THREE.SphereGeometry(0.3, 4, 4);
+    const flashGeo = new THREE.SphereGeometry(0.05, 4, 4);
     const flashMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
     const flash = new THREE.Mesh(flashGeo, flashMat);
     flash.position.copy(position);
@@ -99,7 +99,7 @@ export class EffectsManager {
     
     // Fire particles
     for (let i = 0; i < 20; i++) {
-      const size = 0.5 + Math.random() * 1.5;
+      const size = 0.1 + Math.random() * 0.4;
       const geo = new THREE.SphereGeometry(size, 4, 4);
       const mat = new THREE.MeshBasicMaterial({ 
         color: Math.random() > 0.5 ? 0xff4400 : 0xffaa00,
@@ -109,9 +109,9 @@ export class EffectsManager {
       const mesh = new THREE.Mesh(geo, mat);
       
       const velocity = new THREE.Vector3(
-        (Math.random() - 0.5) * 40,
-        Math.random() * 25,
-        (Math.random() - 0.5) * 40
+        (Math.random() - 0.5) * 8,
+        Math.random() * 5,
+        (Math.random() - 0.5) * 8
       );
       
       group.add(mesh);
@@ -120,7 +120,7 @@ export class EffectsManager {
     
     // Smoke particles
     for (let i = 0; i < 15; i++) {
-      const size = 1 + Math.random() * 3;
+      const size = 0.2 + Math.random() * 0.6;
       const geo = new THREE.SphereGeometry(size, 4, 4);
       const mat = new THREE.MeshBasicMaterial({ 
         color: 0x444444,
@@ -130,9 +130,9 @@ export class EffectsManager {
       const mesh = new THREE.Mesh(geo, mat);
       
       const velocity = new THREE.Vector3(
-        (Math.random() - 0.5) * 15,
-        5 + Math.random() * 15,
-        (Math.random() - 0.5) * 15
+        (Math.random() - 0.5) * 3,
+        1 + Math.random() * 3,
+        (Math.random() - 0.5) * 3
       );
       
       group.add(mesh);
@@ -142,9 +142,9 @@ export class EffectsManager {
     // Debris pieces
     for (let i = 0; i < 8; i++) {
       const geo = new THREE.BoxGeometry(
-        0.3 + Math.random() * 0.8,
-        0.1 + Math.random() * 0.3,
-        0.3 + Math.random() * 0.8
+        0.06 + Math.random() * 0.16,
+        0.02 + Math.random() * 0.06,
+        0.06 + Math.random() * 0.16
       );
       const mat = new THREE.MeshLambertMaterial({ 
         color: 0x666666
@@ -152,9 +152,9 @@ export class EffectsManager {
       const mesh = new THREE.Mesh(geo, mat);
       
       const velocity = new THREE.Vector3(
-        (Math.random() - 0.5) * 50,
-        Math.random() * 30,
-        (Math.random() - 0.5) * 50
+        (Math.random() - 0.5) * 10,
+        Math.random() * 6,
+        (Math.random() - 0.5) * 10
       );
       
       group.add(mesh);
@@ -172,7 +172,7 @@ export class EffectsManager {
   
   spawnDamageSmoke(position: THREE.Vector3) {
     // Smaller smoke puff for taking damage
-    const geo = new THREE.SphereGeometry(0.8, 4, 4);
+    const geo = new THREE.SphereGeometry(0.16, 4, 4);
     const mat = new THREE.MeshBasicMaterial({ 
       color: 0x333333, 
       transparent: true, 
@@ -191,7 +191,7 @@ export class EffectsManager {
         mat.dispose();
         return;
       }
-      smoke.position.y += 0.1;
+      smoke.position.y += 0.02;
       smoke.scale.multiplyScalar(1.02);
       mat.opacity = 0.5 * (1 - elapsed);
       requestAnimationFrame(animate);

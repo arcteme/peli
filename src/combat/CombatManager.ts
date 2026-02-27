@@ -370,7 +370,7 @@ export class CombatManager {
   private checkBuildingCollision(position: THREE.Vector3, colliders: THREE.Box3[]): boolean {
     const playerBox = new THREE.Box3().setFromCenterAndSize(
       position,
-      new THREE.Vector3(4, 2, 4)
+      new THREE.Vector3(0.8, 0.4, 0.8)
     );
     
     for (const collider of colliders) {

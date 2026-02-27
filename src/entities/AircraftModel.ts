@@ -68,8 +68,8 @@ export function createAircraftModel(def: AircraftDef): THREE.Group {
   prop.position.set(0, 0, 3.2); // nose tip
   group.add(prop);
   
-  // Scale for good visual size 
-  group.scale.setScalar(1.5);
+  // Scale to 1:10 model — real buildings feel much larger around the tiny aircraft
+  group.scale.setScalar(0.15);
   
   return group;
 }
@@ -319,45 +319,12 @@ function buildGenericFighter(group: THREE.Group, body: THREE.Material, accent: T
 }
 
 /**
- * Cockpit interior (minimal placeholder for first-person view)
+ * Cockpit interior — intentionally empty.
+ * All aiming is handled by the HTML crosshair in the HUD.
+ * No 3D geometry here means a fully clear cockpit view.
  */
-export function createCockpitInterior(def: AircraftDef): THREE.Group {
+export function createCockpitInterior(_def: AircraftDef): THREE.Group {
   const group = new THREE.Group();
   group.name = 'cockpit-interior';
-  
-  const frameMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-  const panelMat = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
-  
-  // Instrument panel
-  const panelGeo = new THREE.BoxGeometry(1.4, 0.6, 0.05);
-  const panel = new THREE.Mesh(panelGeo, panelMat);
-  panel.position.set(0, -0.2, 0.8);
-  group.add(panel);
-  
-  // Gunsight
-  const sightGeo = new THREE.RingGeometry(0.03, 0.04, 16);
-  const sightMat = new THREE.MeshBasicMaterial({ color: 0xff6600, side: THREE.DoubleSide });
-  const sight = new THREE.Mesh(sightGeo, sightMat);
-  sight.position.set(0, 0.15, 1.0);
-  group.add(sight);
-  
-  // Canopy frame struts
-  for (const angle of [-0.6, 0, 0.6]) {
-    const strutGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.4, 4);
-    const strut = new THREE.Mesh(strutGeo, frameMat);
-    strut.position.set(Math.sin(angle) * 0.55, 0.3, 0.2);
-    strut.rotation.z = angle;
-    strut.rotation.x = 0.3;
-    group.add(strut);
-  }
-  
-  // Side frames
-  for (const side of [-1, 1]) {
-    const sideGeo = new THREE.BoxGeometry(0.03, 0.5, 1.2);
-    const sideFrame = new THREE.Mesh(sideGeo, frameMat);
-    sideFrame.position.set(side * 0.6, 0.1, 0.3);
-    group.add(sideFrame);
-  }
-  
   return group;
 }
