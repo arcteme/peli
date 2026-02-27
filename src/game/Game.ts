@@ -247,6 +247,7 @@ export class Game {
     const def = AIRCRAFT[this.playerAircraftId];
     
     // --- Input ---
+    // Pass cockpit flag so keyboard pitch/roll are reversed inside the cockpit view
     const input = this.inputManager.getInput();
     
     // Init audio on first user interaction (browser policy)
@@ -263,11 +264,7 @@ export class Game {
       );
     }
     
-    // Invert pitch/roll in cockpit view so controls feel natural from inside
-    if (this.cameraManager.mode === 'cockpit') {
-      input.pitch = -input.pitch;
-      input.roll = -input.roll;
-    }
+    // (Controls are identical in all camera views)
     
     // --- Player Physics ---
     if (this.combat.playerAlive) {
@@ -303,9 +300,9 @@ export class Game {
           const fireDir = this.playerPhysics.getForward();
           
           // Add slight spread
-          fireDir.x += (Math.random() - 0.5) * 0.02;
-          fireDir.y += (Math.random() - 0.5) * 0.02;
-          fireDir.z += (Math.random() - 0.5) * 0.02;
+          fireDir.x += (Math.random() - 0.5) * 0.004;
+          fireDir.y += (Math.random() - 0.5) * 0.004;
+          fireDir.z += (Math.random() - 0.5) * 0.004;
           fireDir.normalize();
           
           this.effects.spawnTracer(muzzlePos, fireDir, 'player', def.weaponDamage);

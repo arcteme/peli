@@ -127,12 +127,14 @@ export class InputManager {
     let toggleCamera = false;
     
     // --- Keyboard input ---
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) pitch += 1;     // pitch up
-    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) pitch -= 1;   // pitch down
-    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) roll -= 1;    // roll left
-    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) roll += 1;   // roll right
-    if (this.keys.has('KeyQ')) yaw += 1;               // yaw left
-    if (this.keys.has('KeyE')) yaw -= 1;               // yaw right
+    // W/S = pitch (W = nose down / pull away, S = nose up / pull toward — joystick convention)
+    // A/D = roll, Q/E = yaw — consistent across chase and cockpit views
+    if (this.keys.has('KeyW') || this.keys.has('ArrowUp'))    pitch -= 1;   // nose down
+    if (this.keys.has('KeyS') || this.keys.has('ArrowDown'))  pitch += 1;   // nose up
+    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft'))  roll  += 1;   // roll right
+    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) roll  -= 1;   // roll left
+    if (this.keys.has('KeyQ')) yaw -= 1;               // yaw left
+    if (this.keys.has('KeyE')) yaw += 1;               // yaw right
     
     // Throttle (persistent)
     if (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight')) {
@@ -146,10 +148,11 @@ export class InputManager {
     if (this.keys.has('Space')) fire = true;
     
     // --- Mouse input ---
+    // Mouse up   = nose up (positive pitch)  — standard flight-sim convention
+    // Mouse right = roll right (positive roll)
     if (this.pointerLocked && this.mouseFlightControl) {
-      // Mouse Y = pitch (inverted: push forward = nose down), Mouse X = roll
-      pitch -= this.mouseMovementY * this.mouseSensitivity * 50;
-      roll += this.mouseMovementX * this.mouseSensitivity * 30;
+      pitch -= this.mouseMovementY * this.mouseSensitivity * 40;
+      roll  += this.mouseMovementX * this.mouseSensitivity * 40;
     }
     
     if (this.mouseDown) fire = true;
