@@ -238,14 +238,13 @@ export class Game {
     // --- Texture calibrator (F4) — suspends the normal game loop ---
     if (this.calibrator.isActive()) return;
 
+    const def = AIRCRAFT[this.playerAircraftId];
+
     // --- Inspector (free-fly dev camera) ---
     if (this.inspectorMode) {
       this._updateInspector(dt);
-      return;
-    }
-
-    const def = AIRCRAFT[this.playerAircraftId];
-    
+      // AI + effects still tick below (no return)
+    } else {
     // --- Input ---
     // Pass cockpit flag so keyboard pitch/roll are reversed inside the cockpit view
     const input = this.inputManager.getInput(dt);
@@ -354,7 +353,8 @@ export class Game {
         this.hud.showMessage('Respawned!', 2000);
       }
     }
-    
+    } // end !inspectorMode player block
+
     // --- AI Enemies ---
     this.combat.update(
       dt,
@@ -428,7 +428,8 @@ export class Game {
       }
     }
     
-    // --- Audio ---
+    // --- Audio / Camera / HUD (player view only) ---
+    if (!this.inspectorMode) {
     this.audioManager.updateEngine(
       this.playerPhysics.throttle,
       this.playerPhysics.speed,
@@ -469,6 +470,7 @@ export class Game {
       })),
       cameraMode: this.cameraManager.mode,
     });
+    } // end !inspectorMode audio/camera/HUD block
   }
   
   private render() {
