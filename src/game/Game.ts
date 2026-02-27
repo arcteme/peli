@@ -270,8 +270,8 @@ export class Game {
     if (this.combat.playerAlive) {
       this.playerPhysics.update(input, dt);
       
-      // Ground crash — hitting the terrain floor counts as shot down
-      if (this.playerPhysics.position.y <= PHYSICS.minAltitude + 0.2) {
+      // Ground crash — plane hit the terrain
+      if (this.playerPhysics.position.y < 2) {
         this.combat.killPlayer();
         this.effects.spawnExplosion(this.playerPhysics.position.clone());
         this.audioManager.playExplosion();

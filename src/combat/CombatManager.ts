@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { AircraftDef, AircraftId, InputState } from '../shared/types';
-import { AIRCRAFT, AI_SPAWN_POINTS, PHYSICS } from '../shared/constants';
+import { AIRCRAFT, AI_SPAWN_POINTS, AI_PILOT_NAMES, PHYSICS } from '../shared/constants';
 
 import { FlightPhysics } from '../physics/FlightPhysics';
 import { createAircraftModel } from '../entities/AircraftModel';
@@ -23,6 +23,8 @@ interface AIPlane {
   patrolRadius: number;      // orbit radius
   patrolAltitude: number;    // orbit altitude
   patrolDirection: number;   // +1 or -1 (CW vs CCW)
+  pilotName: string;         // display name shown above the plane
+  labelSprite: THREE.Sprite; // world-space floating name tag
   lastFireTime: number;
 }
 
@@ -79,6 +81,12 @@ export class CombatManager {
       mesh.position.copy(spawnPos);
       this.scene.add(mesh);
       
+      // Floating name tag — large enough to spot from 300+ m away
+      const pilotName = AI_PILOT_NAMES[i % AI_PILOT_NAMES.length];
+      const labelSprite = createNameLabel(pilotName);
+      labelSprite.position.set(spawnPos.x, spawnPos.y + 5, spawnPos.z);
+      this.scene.add(labelSprite);
+      
       // Evenly spaced starting angles, fixed distinct altitudes and radii for
       // clear individual paths that don't clog together around the centre.
       const patrolAngle = (i / count) * Math.PI * 2;
@@ -107,6 +115,8 @@ export class CombatManager {
         patrolRadius,
         patrolAltitude,
         patrolDirection,
+        pilotName,
+        labelSprite,
         lastFireTime: 0,
       };
       
@@ -176,8 +186,8 @@ export class CombatManager {
       // Update physics
       enemy.physics.update(input, dt);
       
-      // Ground crash — if the plane reaches the altitude floor it has crashed
-      if (enemy.physics.position.y <= PHYSICS.minAltitude + 0.2) {
+      // Ground crash — plane hit terrain
+      if (enemy.physics.position.y < 2) {
         const pos = this.killEnemy(enemy, 'crashed into the ground', now);
         if (pos && onEnemyKilled) onEnemyKilled(pos);
         continue;
@@ -193,6 +203,13 @@ export class CombatManager {
       // Update mesh
       enemy.mesh.position.copy(enemy.physics.position);
       enemy.mesh.quaternion.copy(enemy.physics.quaternion);
+      
+      // Keep floating name tag above the plane
+      enemy.labelSprite.position.set(
+        enemy.physics.position.x,
+        enemy.physics.position.y + 5,
+        enemy.physics.position.z
+      );
       
       // Spin propeller
       const prop = enemy.mesh.getObjectByName('propeller');
@@ -302,14 +319,14 @@ export class CombatManager {
     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
     
-    // Pitch: dot product of toTarget with local up
+    // Pitch: positive pitchDot = target is above in local space = pitch nose up (positive)
     const pitchDot = _toTarget.dot(up);
-    input.pitch = -pitchDot * 2;
+    input.pitch = pitchDot * 2;
     
-    // Yaw/Roll: dot product with local right
+    // Roll/Yaw: positive yawDot = target is to the right = bank right to turn right (+roll)
     const yawDot = _toTarget.dot(right);
-    input.roll = -yawDot * 1.5;
-    input.yaw = -yawDot * 0.5;
+    input.roll = yawDot * 1.5;
+    input.yaw = -yawDot * 0.5;  // yaw sign is intentionally opposite: negative input turns right
     
     // --- Building avoidance ---
     if (buildingColliders) {
@@ -348,8 +365,9 @@ export class CombatManager {
         const rightDir = new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
         const upDir = new THREE.Vector3(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
         
-        const avoidPitch = -avoidance.dot(upDir) * 3;
-        const avoidRoll = -avoidance.dot(rightDir) * 2;
+        // Signs match main steering: pitch positive = up, roll positive = bank right
+        const avoidPitch = avoidance.dot(upDir) * 3;
+        const avoidRoll = avoidance.dot(rightDir) * 2;
         
         // Blend avoidance in heavily (override normal steering)
         input.pitch = input.pitch * 0.3 + avoidPitch * 0.7;
@@ -357,10 +375,10 @@ export class CombatManager {
         input.yaw *= 0.3;
       }
       
-      // Ensure minimum altitude — pitch up if getting dangerously low
+      // Ensure minimum altitude — positive pitch = nose UP
       if (pos.y < 25) {
         const urgency = Math.max(0, (25 - pos.y) / 25);
-        input.pitch = Math.min(input.pitch, -urgency); // pitch up (negative = up)
+        input.pitch = Math.max(input.pitch, urgency); // force nose up
         input.throttle = Math.min(1, input.throttle + urgency * 0.4);
       }
     }
@@ -408,6 +426,7 @@ export class CombatManager {
     enemy.alive = false;
     enemy.respawnTimer = 3;
     enemy.mesh.visible = false;
+    enemy.labelSprite.visible = false;
     // Release attacker lock so another plane can engage
     if (this.attackerId === enemy.id) this.attackerId = null;
     
@@ -434,6 +453,10 @@ export class CombatManager {
     enemy.health = enemy.maxHealth;
     enemy.alive = true;
     enemy.mesh.visible = true;
+    enemy.labelSprite.visible = true;
+    enemy.labelSprite.position.set(
+      enemy.physics.position.x, enemy.physics.position.y + 5, enemy.physics.position.z
+    );
     enemy.behavior = 'chase';  // immediately intercept the player
     enemy.behaviorTimer = 0;   // re-evaluate right away
     // Also release attacker lock on respawn
@@ -519,4 +542,30 @@ export class CombatManager {
     this.playerMaxHealth = maxHealth;
     this.playerAlive = true;
   }
+}
+
+/**
+ * Creates a billboard sprite with the pilot's name, visible from far away.
+ * Added to the scene at world-level (not parented to the scaled aircraft mesh).
+ */
+function createNameLabel(name: string): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  canvas.width = 320;
+  canvas.height = 56;
+  const ctx = canvas.getContext('2d')!;
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // Dark outline for readability over any background
+  ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+  ctx.lineWidth = 5;
+  ctx.strokeText(name, 160, 28);
+  // Warm yellow text — easy to spot
+  ctx.fillStyle = '#ffe066';
+  ctx.fillText(name, 160, 28);
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(18, 3.2, 1); // world-space meters — readable from ~400 m
+  return sprite;
 }

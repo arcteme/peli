@@ -43,12 +43,31 @@ export const SPAWN_POINTS = [
 // AI enemy spawn points — placed on the opposite side of the map from the
 // player (who spawns at x≈+400).  Each entry is x<0 or far z.
 export const AI_SPAWN_POINTS = [
-  { x: -400, y: 80, z:    0 },
-  { x: -283, y: 90, z:  283 },
-  { x: -283, y: 90, z: -283 },
-  { x:    0, y: 80, z:  400 },
-  { x:    0, y: 80, z: -400 },
-  { x: -200, y: 90, z: -350 },
+  { x: -400, y: 100, z:    0 },
+  { x: -283, y: 110, z:  283 },
+  { x: -283, y: 110, z: -283 },
+  { x:    0, y: 100, z:  400 },
+  { x:    0, y: 100, z: -400 },
+  { x: -200, y: 110, z: -350 },
+];
+
+// Random pilot ace names assigned to AI enemies
+export const AI_PILOT_NAMES = [
+  'Baron von Kessler',
+  'Red Eagle',
+  'Iron Hawk',
+  'Shadow Wolf',
+  'Black Baron',
+  'Thunder Jack',
+  'Steel Hans',
+  'Flying Schroeder',
+  'Red Manfred',
+  'Hurricane Bill',
+  'Deadly Duke',
+  'Stuka Kurt',
+  'Blue Devil',
+  'Night Falcon',
+  'Ace McGee',
 ];
 
 export const AIRCRAFT: Record<string, AircraftDef> = {

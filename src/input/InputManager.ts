@@ -52,8 +52,17 @@ export class InputManager {
     'Space', 'Tab',
   ]);
   
+  /** Returns true when a text input or textarea has keyboard focus — typing should not be intercepted. */
+  private isInputFocused(): boolean {
+    const el = document.activeElement;
+    return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+  }
+
   private setupKeyboard() {
     window.addEventListener('keydown', (e) => {
+      // Don't capture keys while the player is typing in a menu input
+      if (this.isInputFocused()) return;
+
       // Prevent browser default for game keys (Ctrl+S, Ctrl+W, Tab, Space scroll, etc.)
       if (this.gameKeys.has(e.code)) {
         e.preventDefault();
@@ -70,11 +79,13 @@ export class InputManager {
     });
     
     window.addEventListener('keyup', (e) => {
+      // Always release keys so they don't stick if focus changes mid-press
+      this.keys.delete(e.code);
+      if (this.isInputFocused()) return;
+
       if (this.gameKeys.has(e.code)) {
         e.preventDefault();
       }
-      
-      this.keys.delete(e.code);
       
       if (e.code === 'KeyV') {
         this._toggleCameraConsumed = false;

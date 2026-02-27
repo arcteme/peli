@@ -89,14 +89,10 @@ export class FlightPhysics {
     this.position.addScaledVector(this.velocity, dt);
     
     // --- Altitude constraints ---
-    if (this.position.y < PHYSICS.minAltitude) {
-      this.position.y = PHYSICS.minAltitude;
-      // Bounce upward slightly
-      _euler.setFromQuaternion(this.quaternion, 'YXZ');
-      if (_euler.x > 0) { // if pointing downward
-        _euler.x *= 0.5; // reduce pitch down
-      }
-      this.quaternion.setFromEuler(_euler);
+    // Crash detection is handled externally (CombatManager / Game.ts) at y < 2.
+    // This is just a hard safety floor to prevent falling to -infinity.
+    if (this.position.y < -10) {
+      this.position.y = -10;
     }
     
     if (this.position.y > PHYSICS.maxAltitude) {
