@@ -160,6 +160,8 @@ export class TextureCalibrator {
       case 'KeyE':         e.preventDefault(); this.rotationY += rotStep; break;
       case 'BracketLeft':  e.preventDefault(); this.scale = Math.max(0.1, this.scale - scaleStep); break; // shrink
       case 'BracketRight': e.preventDefault(); this.scale += scaleStep; break; // grow
+      case 'Digit8':       e.preventDefault(); this.scale = Math.max(0.1, this.scale - scaleStep); break; // shrink
+      case 'Digit9':       e.preventDefault(); this.scale += scaleStep; break; // grow
       case 'KeyR':         this.offsetX = 0; this.offsetZ = 0; this.rotationY = 0; this.scale = 1.0; break;
       default: return;
     }
@@ -227,7 +229,7 @@ export class TextureCalibrator {
         <span style="color:#aaa; font-size:12px;">
           Arrow = &plusmn;2 m &nbsp;|&nbsp; Shift+Arrow = &plusmn;0.2 m &nbsp;|&nbsp;
           Q/E = &plusmn;0.5&deg; &nbsp;|&nbsp; Shift+Q/E = &plusmn;0.1&deg; &nbsp;|&nbsp;
-          [ / ] = &plusmn;1% scale &nbsp;|&nbsp; Shift+[ / ] = &plusmn;0.1% scale &nbsp;|&nbsp; R = reset all
+          8 / 9 = &plusmn;1% scale &nbsp;|&nbsp; Shift+8/9 = &plusmn;0.1% scale &nbsp;|&nbsp; R = reset all
         </span>
         <br>
         X: <b style="color:#55ddff">${fmtN(this.offsetX)} m</b>
