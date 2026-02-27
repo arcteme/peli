@@ -40,11 +40,12 @@ export class FlightPhysics {
   update(input: InputState, dt: number): void {
     const def = this.aircraftDef;
 
-    // ── 1. Throttle & target speed ─────────────────────────────────────────
+    // ── 1. Throttle & engine thrust ──────────────────────────────────────────
+    // Throttle contributes forward thrust each frame — NOT a target-speed governor.
+    // Gravity (step 2) and drag (step 3) are free to change speed independently,
+    // so diving / climbing produce real speed changes the pilot can feel.
     this.throttle = THREE.MathUtils.clamp(input.throttle, 0, 1);
-    const targetSpeed = THREE.MathUtils.lerp(def.speedMin, def.speedMax, this.throttle);
-    const speedDiff   = targetSpeed - this.speed;
-    this.speed += Math.sign(speedDiff) * Math.min(Math.abs(speedDiff), def.acceleration * dt);
+    this.speed += this.throttle * def.acceleration * dt;
 
     // ── 2. Gravity / energy exchange ──────────────────────────────────────
     // Diving gains speed, climbing bleeds it.
@@ -54,8 +55,10 @@ export class FlightPhysics {
     this.speed += gravityDelta;
 
     // ── 3. Drag ────────────────────────────────────────────────────────────
-    // Linear drag + small quadratic term so high speed is harder to sustain.
-    const drag = (PHYSICS.dragCoefficient + 0.0008 * this.speed) * this.speed * dt;
+    // Pure quadratic drag — calibrated so 50 % throttle ≈ equilibrium at cruise speed:
+    //   thrust(0.5) = 0.5 × acc ≈ dragCoeff × cruise²
+    //   → dragCoeff ≈ 0.5 × acc / cruise²  (≈ 0.0085 for all three aircraft)
+    const drag = PHYSICS.dragCoefficient * this.speed * this.speed * dt;
     this.speed -= drag;
 
     // Clamp

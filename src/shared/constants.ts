@@ -18,8 +18,8 @@ export const WORLD_SCALE = 0.1;
 // Flight physics constants
 export const PHYSICS = {
   autoLevelStrength: 0.3,   // how quickly plane returns to level (rad/s)
-  dragCoefficient: 0.02,    // air resistance
-  gravityEffect: 0.3,       // reduced gravity for arcade feel
+  dragCoefficient: 0.009,   // quadratic drag — balanced so 50% throttle ≈ cruise equilibrium
+  gravityEffect: 1.0,       // energy exchange: diving gains speed, climbing bleeds it
   minAltitude: 1,           // floor height in meters (model flies very low)
   maxAltitude: 500,         // ceiling
   groundBounceForce: 20,    // push-up force when too low
