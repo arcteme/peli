@@ -97,7 +97,7 @@ export class CombatManager {
         respawnTimer: 0,
         targetId: null,
         behaviorTimer: 0,
-        behavior: 'patrol',
+        behavior: 'chase',  // start immediately intercepting the player
         patrolPoint: new THREE.Vector3(
           Math.cos(patrolAngle) * patrolRadius,
           patrolAltitude,
@@ -162,14 +162,15 @@ export class CombatManager {
       // Generate AI input (with building avoidance)
       const input = this.generateAIInput(enemy, playerPosition, playerAlive, now, buildingColliders);
       
-      // Force AI back if too far from center
+      // Force AI back if way out of bounds (physics boundary is 450m; give AI some margin)
       const distFromCenter = Math.sqrt(
         enemy.physics.position.x ** 2 + enemy.physics.position.z ** 2
       );
-      if (distFromCenter > 400) {
-        // Override: steer back to center
+      if (distFromCenter > 420) {
+        // Too far — stop attacking and return to orbit
+        if (this.attackerId === enemy.id) this.attackerId = null;
         enemy.behavior = 'patrol';
-        enemy.behaviorTimer = 0; // re-evaluate soon
+        enemy.behaviorTimer = 0;
       }
       
       // Update physics
@@ -222,40 +223,28 @@ export class CombatManager {
     const distToPlayer = enemy.physics.position.distanceTo(playerPos);
     
     if (!playerAlive) {
+      // Player is dead — everyone stands down and orbits
       if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'patrol';
       return;
     }
     
-    if (distToPlayer < 150 && enemy.health < enemy.maxHealth * 0.3) {
-      // Low health — break off attack
+    // --- Player is alive: always engage ---
+    if (distToPlayer < 120 && enemy.health < enemy.maxHealth * 0.3) {
+      // Very low health and close — break off and evade
       if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'evade';
-    } else if (distToPlayer < 300) {
-      // Only engage if no one else is already attacking
-      const canAttack = this.attackerId === null || this.attackerId === enemy.id;
-      if (canAttack && Math.random() > 0.3) {
-        enemy.behavior = 'attack';
-        this.attackerId = enemy.id;
-      } else {
-        // Others hang back and chase loosely — stay close but don't shoot
-        if (this.attackerId === enemy.id) this.attackerId = null;
-        enemy.behavior = 'chase';
-      }
-    } else {
-      if (this.attackerId === enemy.id) this.attackerId = null;
-      enemy.behavior = 'patrol';
+      return;
     }
     
-    // Tighten orbit if drifted too far
-    if (enemy.behavior === 'patrol') {
-      const distFromCenter = Math.sqrt(
-        enemy.physics.position.x ** 2 + enemy.physics.position.z ** 2
-      );
-      if (distFromCenter > 350) {
-        enemy.patrolRadius = Math.max(100, enemy.patrolRadius - 30);
-        enemy.patrolAngle = Math.atan2(enemy.physics.position.z, enemy.physics.position.x);
-      }
+    // One designated attacker fires; others chase to close the gap
+    const canAttack = this.attackerId === null || this.attackerId === enemy.id;
+    if (canAttack) {
+      enemy.behavior = 'attack';
+      this.attackerId = enemy.id;
+    } else {
+      // Hang back a bit — approach but don't shoot
+      enemy.behavior = 'chase';
     }
   }
   
@@ -278,11 +267,11 @@ export class CombatManager {
         break;
       case 'chase':
         targetPoint = playerPos;
-        input.throttle = 0.8;
+        input.throttle = 0.85;
         break;
       case 'attack':
         targetPoint = playerPos;
-        input.throttle = 0.9;
+        input.throttle = 1.0;
         break;
       case 'evade':
         // Fly away from player but stay near city center
@@ -445,10 +434,11 @@ export class CombatManager {
     enemy.health = enemy.maxHealth;
     enemy.alive = true;
     enemy.mesh.visible = true;
-    enemy.behavior = 'patrol';
+    enemy.behavior = 'chase';  // immediately intercept the player
+    enemy.behaviorTimer = 0;   // re-evaluate right away
     // Also release attacker lock on respawn
     if (this.attackerId === enemy.id) this.attackerId = null;
-    // Reset orbit: start circling from current position
+    // Reset orbit point in case they fall back to patrol later
     enemy.patrolAngle = Math.atan2(enemy.physics.position.z, enemy.physics.position.x);
     enemy.patrolRadius = 150 + Math.random() * 200;
     enemy.patrolAltitude = 50 + Math.random() * 80;
