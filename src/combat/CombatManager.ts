@@ -284,11 +284,11 @@ export class CombatManager {
         break;
       case 'chase':
         targetPoint = playerPos;
-        input.throttle = 0.85;
+        input.throttle = 0.65;
         break;
       case 'attack':
         targetPoint = playerPos;
-        input.throttle = 1.0;
+        input.throttle = 0.72;
         break;
       case 'evade':
         // Fly away from player but stay near city center
@@ -327,6 +327,31 @@ export class CombatManager {
     const yawDot = _toTarget.dot(right);
     input.roll = yawDot * 1.5;
     input.yaw = -yawDot * 0.5;  // yaw sign is intentionally opposite: negative input turns right
+    
+    // --- Player proximity break-off (avoid collision) ---
+    // When the AI gets too close, pull away instead of flying through.
+    const BREAKOFF_DIST = 40;  // start easing
+    const HARD_BREAKOFF = 20;  // full override
+    const distToPlayer = enemy.physics.position.distanceTo(playerPos);
+    if ((enemy.behavior === 'attack' || enemy.behavior === 'chase') && distToPlayer < BREAKOFF_DIST) {
+      // Direction away from player in world space
+      const awayWorld = enemy.physics.position.clone().sub(playerPos).normalize();
+      // Always climb during break-off
+      awayWorld.y = Math.max(awayWorld.y, 0.4);
+      awayWorld.normalize();
+      
+      const rightDir = new THREE.Vector3(1, 0, 0).applyQuaternion(enemy.physics.quaternion);
+      const upDir    = new THREE.Vector3(0, 1, 0).applyQuaternion(enemy.physics.quaternion);
+      const breakPitch = awayWorld.dot(upDir)  * 2.5;
+      const breakRoll  = awayWorld.dot(rightDir) * 2.0;
+      
+      // Blend weight: full override inside HARD_BREAKOFF, linear fade out to BREAKOFF_DIST
+      const blend = 1 - Math.max(0, (distToPlayer - HARD_BREAKOFF) / (BREAKOFF_DIST - HARD_BREAKOFF));
+      input.pitch = input.pitch * (1 - blend) + breakPitch * blend;
+      input.roll  = input.roll  * (1 - blend) + breakRoll  * blend;
+      // Reduce throttle when breaking off so we don't immediately circle back
+      input.throttle = Math.max(0.3, input.throttle * (1 - blend * 0.5));
+    }
     
     // --- Building avoidance ---
     if (buildingColliders) {
@@ -388,14 +413,11 @@ export class CombatManager {
     input.yaw = Math.max(-1, Math.min(1, input.yaw));
     input.roll = Math.max(-1, Math.min(1, input.roll));
     
-    // Fire when attacking and roughly aimed at player
-    // Lower threshold (0.88) gives a wider burst window, but spread in callers
-    // makes individual shots inaccurate — lousy-gunner feel.
+    // Fire when attacking and aimed at player.
+    // Engagement range raised to 120m so they shoot from distance rather than closing in.
     if (enemy.behavior === 'attack' && playerAlive) {
       const aimDot = _forward.dot(_toTarget);
-      const distToPlayer = enemy.physics.position.distanceTo(playerPos);
-      
-      if (aimDot > 0.88 && distToPlayer < enemy.aircraftDef.weaponRange) {
+      if (aimDot > 0.88 && distToPlayer > HARD_BREAKOFF && distToPlayer < 120) {
         const fireInterval = 1 / enemy.aircraftDef.weaponFireRate;
         if (now - enemy.lastFireTime > fireInterval * 1000) {
           input.fire = true;
