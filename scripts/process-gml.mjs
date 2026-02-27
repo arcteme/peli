@@ -179,12 +179,31 @@ function processBuildingEnd() {
     process.stdout.write(`  kept ${totalBuildingsKept} (seen ${totalBuildingsSeen})…\r`);
   }
 
-  // Triangulate faces and append to global buffers;
+  // Triangulate renderable faces and collect ground surface corners;
   // also track AABB for collision
   let minX =  Infinity, minY =  Infinity, minZ =  Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
+  // Deduplicated floor-corner set: key = "x|z" rounded to 0.01 m
+  const floorCornerMap = new Map();
+
   for (const face of curFaces) {
+    // Ground faces: collect corner vertices but don't render them
+    if (face.type === 'ground') {
+      for (let i = 0; i < face.coords.length; i += 3) {
+        const x = face.coords[i], y = face.coords[i + 1], z = face.coords[i + 2];
+        const key = `${Math.round(x * 100)}|${Math.round(z * 100)}`;
+        // Keep the lowest Y at each XZ position (in case of overlapping ground polys)
+        const prev = floorCornerMap.get(key);
+        if (!prev || y < prev[1]) floorCornerMap.set(key, [x, y, z]);
+        // Still include in AABB
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+        if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+      }
+      continue;
+    }
+
     const isRoof = face.type === 'roof';
     const verts  = isRoof ? roofVerts : wallVerts;
     const idxs   = isRoof ? roofIdxs  : wallIdxs;
@@ -207,15 +226,32 @@ function processBuildingEnd() {
     }
   }
 
+  // Convert floor corners map to array; fall back to AABB corners if no GroundSurface data
+  let floorCorners = [...floorCornerMap.values()];
+  if (floorCorners.length === 0 && isFinite(minY)) {
+    // Fallback: use the 4 AABB footprint corners at minY
+    floorCorners = [
+      [minX, minY, minZ],
+      [minX, minY, maxZ],
+      [maxX, minY, minZ],
+      [maxX, minY, maxZ],
+    ];
+  }
+
   buildings.push({
     id:       curBuilding.id,
     height:   curBuilding.height,
     fn:       curBuilding.fn,
     roofType: curBuilding.roofType,
     box: { minX, minY, minZ, maxX, maxY, maxZ },
+    floorCorners,
   });
 
-  // Record centroid + base elevation for terrain heightmap generation
+  // Record each floor corner as an elevation sample for IDW terrain generation
+  for (const [fx, fy, fz] of floorCorners) {
+    if (isFinite(fy)) elevSamples.push({ cx: fx, cz: fz, groundY: fy });
+  }
+  // Also keep a centroid sample for wider-area influence
   if (isFinite(minY)) elevSamples.push({ cx, cz, groundY: minY });
 }
 
@@ -241,11 +277,12 @@ saxStream.on('opentag', (node) => {
 
   if (name === 'bldg:RoofSurface')    { currentSurfaceType = 'roof'; return; }
   if (name === 'bldg:WallSurface')    { currentSurfaceType = 'wall'; return; }
-  if (name === 'bldg:GroundSurface' ||
-      name === 'bldg:ClosureSurface') { currentSurfaceType = 'skip'; return; }
+  if (name === 'bldg:GroundSurface')  { currentSurfaceType = 'ground'; return; }
+  if (name === 'bldg:ClosureSurface') { currentSurfaceType = 'skip'; return; }
 
   // ── Polygon geometry ────────────────────────────────────────────────────────
-  if (name === 'gml:Polygon' && currentSurfaceType && currentSurfaceType !== 'skip') {
+  if (name === 'gml:Polygon' && currentSurfaceType &&
+      currentSurfaceType !== 'skip') {
     inPolygon            = true;
     polygonExteriorCoords = null;
     return;
@@ -363,6 +400,8 @@ saxStream.on('end', async () => {
   for (const b of buildings) {
     b.box.minY -= minY;
     b.box.maxY -= minY;
+    // Shift floor corner Y values to match the global Y normalisation
+    for (const fc of b.floorCorners) fc[1] -= minY;
   }
   for (const s of elevSamples) s.groundY -= minY;
 
