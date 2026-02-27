@@ -392,11 +392,11 @@ export class Game {
           }
         );
       } else {
-        // Check enemy bullets hitting player
+        // Check enemy bullets hitting player — apply reduced damage (AI is a poor shot)
         if (this.combat.checkPlayerHit(
           tracer.mesh.position,
           this.playerPhysics.position,
-          tracer.damage
+          tracer.damage * 0.35   // AI deals ~35% of nominal damage
         )) {
           this.cameraManager.addShake(0.5);
           this.audioManager.playDamageHit();

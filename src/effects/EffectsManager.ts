@@ -23,6 +23,7 @@ export class EffectsManager {
   
   // Reusable materials
   private tracerMat: THREE.MeshBasicMaterial;
+  private enemyTracerMat: THREE.MeshBasicMaterial;
   private fireMat: THREE.MeshBasicMaterial;
   private smokeMat: THREE.MeshBasicMaterial;
   
@@ -33,7 +34,7 @@ export class EffectsManager {
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     
-    this.tracerMat = new THREE.MeshBasicMaterial({ color: 0xffdd44 });
+    this.tracerMat = new THREE.MeshBasicMaterial({ color: 0xffee00 }); // player — bright yellow
     this.fireMat = new THREE.MeshBasicMaterial({ color: 0xff4400 });
     this.smokeMat = new THREE.MeshBasicMaterial({ 
       color: 0x555555, 
@@ -41,8 +42,11 @@ export class EffectsManager {
       opacity: 0.6 
     });
     
-    // Pre-create tracer meshes (scaled for 1:10 model aircraft)
-    const tracerGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 4);
+    // Enemy tracers — distinct bright orange-red
+    this.enemyTracerMat = new THREE.MeshBasicMaterial({ color: 0xff3300 });
+    
+    // Pre-create tracer meshes — wider and longer for visibility at scale
+    const tracerGeo = new THREE.CylinderGeometry(0.07, 0.07, 1.2, 5);
     tracerGeo.rotateX(Math.PI / 2);
     for (let i = 0; i < this.maxTracers; i++) {
       const mesh = new THREE.Mesh(tracerGeo, this.tracerMat);
@@ -65,6 +69,8 @@ export class EffectsManager {
     mesh.visible = true;
     mesh.position.copy(position);
     mesh.lookAt(position.clone().add(direction));
+    // Swap material based on owner so player and enemy bullets are visually distinct
+    mesh.material = ownerId === 'player' ? this.tracerMat : this.enemyTracerMat;
     
     this.tracers.push({
       mesh,
