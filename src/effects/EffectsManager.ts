@@ -83,18 +83,18 @@ export class EffectsManager {
   }
   
   spawnMuzzleFlash(position: THREE.Vector3) {
-    const flashGeo = new THREE.SphereGeometry(0.05, 4, 4);
-    const flashMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+    const flashGeo = new THREE.SphereGeometry(0.02, 4, 4);
+    const flashMat = new THREE.MeshBasicMaterial({ color: 0xffcc44, transparent: true, opacity: 0.7 });
     const flash = new THREE.Mesh(flashGeo, flashMat);
     flash.position.copy(position);
     this.scene.add(flash);
     
-    // Remove after 1 frame (50ms)
+    // Remove after ~1 frame (20ms) — brief pop, not a persistent glow
     setTimeout(() => {
       this.scene.remove(flash);
       flashGeo.dispose();
       flashMat.dispose();
-    }, 50);
+    }, 20);
   }
   
   spawnExplosion(position: THREE.Vector3) {

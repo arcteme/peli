@@ -198,8 +198,9 @@ export class CombatManager {
       // Update physics
       enemy.physics.update(input, dt);
       
-      // Ground crash — plane hit terrain
-      if (enemy.physics.position.y < 2) {
+      // Ground crash — plane hit terrain (raised to 3m so explosion triggers
+      // before the plane clips into the ground mesh)
+      if (enemy.physics.position.y < 3) {
         const pos = this.killEnemy(enemy, 'crashed into the ground', now);
         if (pos && onEnemyKilled) onEnemyKilled(pos);
         continue;
@@ -419,10 +420,13 @@ export class CombatManager {
       }
       
       // Ensure minimum altitude — positive pitch = nose UP
-      if (pos.y < 25) {
-        const urgency = Math.max(0, (25 - pos.y) / 25);
-        input.pitch = Math.max(input.pitch, urgency); // force nose up
-        input.throttle = Math.min(1, input.throttle + urgency * 0.4);
+      // Threshold raised to 50m so the AI reacts well before stall speed kicks in.
+      if (pos.y < 50) {
+        const urgency = Math.max(0, (50 - pos.y) / 50);
+        // Override any other pitch — pull up hard regardless of stall
+        input.pitch = Math.max(input.pitch, urgency * 0.65);
+        // Push throttle to max when near the ground so speed doesn't drop to stall
+        input.throttle = Math.min(1, input.throttle + urgency * 0.8);
       }
     }
     
@@ -449,9 +453,11 @@ export class CombatManager {
   }
   
   private checkBuildingCollision(position: THREE.Vector3, colliders: THREE.Box3[]): boolean {
+    // Use a generous 2m sphere approximation so fast-moving planes with
+    // velocity momentum can't slip through a building in a single frame.
     const playerBox = new THREE.Box3().setFromCenterAndSize(
       position,
-      new THREE.Vector3(0.8, 0.4, 0.8)
+      new THREE.Vector3(2.0, 1.0, 2.0)
     );
     
     for (const collider of colliders) {
