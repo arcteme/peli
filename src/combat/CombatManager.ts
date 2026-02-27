@@ -50,6 +50,9 @@ export class CombatManager {
   public hitMarkerTimer = 0;
   public damageIndicatorTimer = 0;
   
+  // Only one AI attacks the player at a time
+  private attackerId: string | null = null;
+  
   constructor(scene: THREE.Scene) {
     this.scene = scene;
   }
@@ -219,19 +222,32 @@ export class CombatManager {
     const distToPlayer = enemy.physics.position.distanceTo(playerPos);
     
     if (!playerAlive) {
+      if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'patrol';
       return;
     }
     
     if (distToPlayer < 150 && enemy.health < enemy.maxHealth * 0.3) {
+      // Low health — break off attack
+      if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'evade';
     } else if (distToPlayer < 300) {
-      enemy.behavior = Math.random() > 0.3 ? 'attack' : 'chase';
+      // Only engage if no one else is already attacking
+      const canAttack = this.attackerId === null || this.attackerId === enemy.id;
+      if (canAttack && Math.random() > 0.3) {
+        enemy.behavior = 'attack';
+        this.attackerId = enemy.id;
+      } else {
+        // Others hang back and chase loosely — stay close but don't shoot
+        if (this.attackerId === enemy.id) this.attackerId = null;
+        enemy.behavior = 'chase';
+      }
     } else {
+      if (this.attackerId === enemy.id) this.attackerId = null;
       enemy.behavior = 'patrol';
     }
     
-    // If patrolling and somehow too far out, tighten the orbit
+    // Tighten orbit if drifted too far
     if (enemy.behavior === 'patrol') {
       const distFromCenter = Math.sqrt(
         enemy.physics.position.x ** 2 + enemy.physics.position.z ** 2
@@ -366,11 +382,13 @@ export class CombatManager {
     input.roll = Math.max(-1, Math.min(1, input.roll));
     
     // Fire when attacking and roughly aimed at player
+    // Lower threshold (0.88) gives a wider burst window, but spread in callers
+    // makes individual shots inaccurate — lousy-gunner feel.
     if (enemy.behavior === 'attack' && playerAlive) {
       const aimDot = _forward.dot(_toTarget);
       const distToPlayer = enemy.physics.position.distanceTo(playerPos);
       
-      if (aimDot > 0.95 && distToPlayer < enemy.aircraftDef.weaponRange) {
+      if (aimDot > 0.88 && distToPlayer < enemy.aircraftDef.weaponRange) {
         const fireInterval = 1 / enemy.aircraftDef.weaponFireRate;
         if (now - enemy.lastFireTime > fireInterval * 1000) {
           input.fire = true;
@@ -401,6 +419,8 @@ export class CombatManager {
     enemy.alive = false;
     enemy.respawnTimer = 3;
     enemy.mesh.visible = false;
+    // Release attacker lock so another plane can engage
+    if (this.attackerId === enemy.id) this.attackerId = null;
     
     if (now !== undefined) {
       this.killFeed.push({
@@ -426,6 +446,8 @@ export class CombatManager {
     enemy.alive = true;
     enemy.mesh.visible = true;
     enemy.behavior = 'patrol';
+    // Also release attacker lock on respawn
+    if (this.attackerId === enemy.id) this.attackerId = null;
     // Reset orbit: start circling from current position
     enemy.patrolAngle = Math.atan2(enemy.physics.position.z, enemy.physics.position.x);
     enemy.patrolRadius = 150 + Math.random() * 200;

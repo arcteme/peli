@@ -361,7 +361,12 @@ export class Game {
       this.cityMap.colliders,
       now,
       (position, direction, damage) => {
-        // Enemy fires a bullet
+        // Enemy fires — add generous spread so they're lousy shots
+        const spread = 0.12;
+        direction.x += (Math.random() - 0.5) * spread;
+        direction.y += (Math.random() - 0.5) * spread;
+        direction.z += (Math.random() - 0.5) * spread;
+        direction.normalize();
         this.effects.spawnTracer(position, direction, 'enemy', damage);
       },
       (position) => {
