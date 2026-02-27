@@ -81,7 +81,7 @@ export class Game {
     this.audioManager = new AudioManager(this.cameraManager.camera);
     
     // World
-    this.cityMap = new CityMap();
+    this.cityMap = new CityMap(this.renderer);
     this.scene.add(this.cityMap.group);
 
     this.sky = new Sky(this.scene);
