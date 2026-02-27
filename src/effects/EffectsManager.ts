@@ -45,8 +45,8 @@ export class EffectsManager {
     // Enemy tracers — distinct bright orange-red
     this.enemyTracerMat = new THREE.MeshBasicMaterial({ color: 0xff3300 });
     
-    // Pre-create tracer meshes — wider and longer for visibility at scale
-    const tracerGeo = new THREE.CylinderGeometry(0.07, 0.07, 1.2, 5);
+    // Pre-create tracer meshes — thinner and snappier
+    const tracerGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 5);
     tracerGeo.rotateX(Math.PI / 2);
     for (let i = 0; i < this.maxTracers; i++) {
       const mesh = new THREE.Mesh(tracerGeo, this.tracerMat);
@@ -75,8 +75,8 @@ export class EffectsManager {
     this.tracers.push({
       mesh,
       direction: direction.clone().normalize(),
-      speed: 50,
-      life: 2.0,
+      speed: 200,
+      life: 0.5,
       ownerId,
       damage,
     });

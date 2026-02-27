@@ -6,8 +6,8 @@ export const GAME_CONFIG: GameConfig = {
   mapCenterLon: 25.1064,
   gravity: 9.81,
   respawnTime: 3,           // seconds
-  bulletSpeed: 50,          // m/s — BB/toy-gun speed for 1:10 scale
-  bulletLife: 2.0,          // seconds (gives ~100m range)
+  bulletSpeed: 200,         // m/s — fast tracers avoid apparent drift with velocity-momentum physics
+  bulletLife: 0.5,          // seconds (gives ~100m range)
   tickRate: 20,             // server Hz
 };
 
@@ -85,7 +85,7 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     rollRate: 3.5,
     health: 80,
     weaponDamage: 12,
-    weaponFireRate: 8,
+    weaponFireRate: 14,
     weaponRange: 80,
     bodyColor: 0x6b7c5e,  // olive green
     accentColor: 0xcc3333, // red (rising sun)
@@ -104,7 +104,7 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     rollRate: 3.8,
     health: 100,
     weaponDamage: 10,
-    weaponFireRate: 10,
+    weaponFireRate: 18,
     weaponRange: 80,
     bodyColor: 0x5a6e4a,  // RAF green
     accentColor: 0x8b7355, // brown camo
@@ -123,7 +123,7 @@ export const AIRCRAFT: Record<string, AircraftDef> = {
     rollRate: 3.2,
     health: 110,
     weaponDamage: 14,
-    weaponFireRate: 7,
+    weaponFireRate: 12,
     weaponRange: 80,
     bodyColor: 0x808080,  // field gray
     accentColor: 0xd4c36a, // yellow nose
