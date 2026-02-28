@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AircraftId } from '../shared/types';
 import { AIRCRAFT, SPAWN_POINTS, PHYSICS } from '../shared/constants';
+import { t } from '../i18n';
 import { FlightPhysics } from '../physics/FlightPhysics';
 import { CameraManager } from '../camera/CameraManager';
 import { InputManager } from '../input/InputManager';
@@ -119,9 +120,9 @@ export class Game {
           const euler = new THREE.Euler().setFromQuaternion(this.cameraManager.camera.quaternion, 'YXZ');
           this.inspectorYaw   = euler.y;
           this.inspectorPitch = euler.x;
-          this.hud.showMessage('Inspector mode ON — WASD fly, Shift=fast, F3 exit', 3000);
+          this.hud.showMessage(t('game.inspectorOn'), 3000);
         } else {
-          this.hud.showMessage('Inspector mode OFF', 1500);
+          this.hud.showMessage(t('game.inspectorOff'), 1500);
         }
       }
 
@@ -129,7 +130,7 @@ export class Game {
         e.preventDefault();
         if (this.calibrator.isActive()) {
           this.calibrator.deactivate();
-          this.hud.showMessage('Texture calibrator OFF', 1500);
+          this.hud.showMessage(t('game.calibratorOff'), 1500);
         } else {
           // Exit inspector if active so the two dev modes don\'t overlap
           if (this.inspectorMode) {
@@ -137,7 +138,7 @@ export class Game {
             this.hud.showMessage('', 0);
           }
           this.calibrator.activate();
-          this.hud.showMessage('Texture calibrator ON — Arrow keys to move, F4 to exit', 3000);
+          this.hud.showMessage(t('game.calibratorOn'), 3000);
         }
       }
     });
@@ -175,7 +176,7 @@ export class Game {
     
     // Start HUD
     this.hud.show();
-    this.hud.showMessage(`Flying ${def.name} — Click to enable mouse control`, 4000);
+    this.hud.showMessage(t('game.flying', def.name), 4000);
     
     // Start game loop
     this.running = true;
@@ -258,7 +259,7 @@ export class Game {
     if (input.toggleCamera) {
       this.cameraManager.toggleMode();
       this.hud.showMessage(
-        this.cameraManager.mode === 'cockpit' ? 'Cockpit View' : 'Chase View', 
+        this.cameraManager.mode === 'cockpit' ? t('game.cockpitView') : t('game.chaseView'),
         1500
       );
     }
@@ -282,8 +283,8 @@ export class Game {
         this.playerPhysics.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), groundHeading);
       }
 
-      // Building collision
-      if (this.cityMap.checkCollision(this.playerPhysics.position, 0.5)) {
+      // Building collision — sphere-vs-AABB, radius 0.8m (aircraft half-span)
+      if (this.cityMap.checkCollision(this.playerPhysics.position, 0.8)) {
         this.combat.killPlayer();
         this.effects.spawnExplosion(this.playerPhysics.position.clone());
         this.audioManager.playExplosion();
@@ -350,7 +351,7 @@ export class Game {
         const heading = Math.atan2(-spawn.x, -spawn.z);
         this.playerPhysics.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), heading);
         this.playerMesh.visible = true;
-        this.hud.showMessage('Respawned!', 2000);
+        this.hud.showMessage(t('game.respawned'), 2000);
       }
     }
     } // end !inspectorMode player block
@@ -440,7 +441,7 @@ export class Game {
       }
       
       // Check bullets hitting buildings
-      if (this.cityMap.checkCollision(tracer.mesh.position, 0.5)) {
+      if (this.cityMap.checkCollision(tracer.mesh.position, 0.5, 0)) {
         tracer.life = 0; // destroy bullet
       }
     }

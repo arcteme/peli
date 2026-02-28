@@ -158,14 +158,20 @@ export class CityMap {
 
   /** Stored heightmap for terrain sampling (set by _applyTerrain) */
   private _terrainHeights: Float32Array | null = null;
-  private _terrainCols = 101;
-  private _terrainRows = 101;
+  private _terrainCols = 551;
+  private _terrainRows = 551;
   private _terrainHalf = 550;
   private _renderer: THREE.WebGLRenderer | null = null;
 
+  // Aerial texture calibration — applied as a UV transform, NOT as mesh transforms,
+  // so the terrain geometry stays in pure scene space and heights are never distorted.
+  // These values come from the TextureCalibrator (F4) snippet — paste there as before.
+  private _aerialOffsetX =  66.0;
+  private _aerialOffsetZ = -20.0;
+  private _aerialRotZ    = -0.069813;  // rotation.z in radians (≈ -4°)
+  private _aerialScale   =  1.430000;
+
   // Scratch objects reused every frame — never reallocated in hot paths.
-  private readonly _scratchBox  = new THREE.Box3();
-  private readonly _scratchSize = new THREE.Vector3();
   private readonly _scratchPt   = new THREE.Vector3();
   private _grid: BuildingGrid | null = null;
 
@@ -226,7 +232,11 @@ export class CityMap {
 
     for (const b of meta.buildings) {
       const { minX, minY, minZ, maxX, maxY, maxZ } = b.box;
-      if (!isFinite(minX) || !isFinite(maxX)) continue;
+      // Skip degenerate boxes (any non-finite value or zero/inverted dimension)
+      if (!isFinite(minX) || !isFinite(maxX) ||
+          !isFinite(minY) || !isFinite(maxY) ||
+          !isFinite(minZ) || !isFinite(maxZ)) continue;
+      if (maxX <= minX || maxY <= minY || maxZ <= minZ) continue;
       this.colliders.push(
         new THREE.Box3(
           new THREE.Vector3(minX, minY, minZ),
@@ -250,6 +260,9 @@ export class CityMap {
    * After PlaneGeometry rotation.x = -π/2:
    *   local (x, y, z) → world (x, z, −y)
    * So setting position.z on a vertex changes its world Y.
+   *
+   * The mesh has NO scale or rotation.z, so local-z maps 1:1 to world-Y.
+   * Heights stored in the binary are already in scene units (metres above BASE_ELEV).
    */
   private _applyTerrain(buf: ArrayBuffer): void {
     const header = new Uint32Array(buf, 0, 2);
@@ -265,14 +278,13 @@ export class CityMap {
     const positions = this.aerialMesh.geometry.attributes.position
       .array as Float32Array;
 
-    // PlaneGeometry(width, height, widthSegs, heightSegs) vertex order:
-    //   vertexIdx = row * (widthSegs+1) + col  counting left→right, top→bottom
-    // After rotation.x=-π/2: local z → world Y
-    const geoCols = COLS; // widthSegs+1
+    // PlaneGeometry vertex order: row * (widthSegs+1) + col, left→right top→bottom.
+    // After rotation.x=-π/2: local-z → world-Y (1:1, no scale on mesh).
+    const geoCols = COLS;
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < geoCols; col++) {
         const vIdx = row * geoCols + col;
-        positions[vIdx * 3 + 2] = heights[vIdx]; // set local-z = world-Y
+        positions[vIdx * 3 + 2] = heights[vIdx]; // scene_y directly
       }
     }
 
@@ -289,14 +301,19 @@ export class CityMap {
     if (!this._terrainHeights) return 0;
     const COLS = this._terrainCols;
     const ROWS = this._terrainRows;
-    const half = 550; // fixed from preprocessing
-    const segs = COLS - 1;
-    const cell = (half * 2) / segs;
+    const half = 550;
+    const cell = (half * 2) / (COLS - 1); // 2 m for 551×551
 
+    // The terrain mesh is at scene-space identity (no offset/scale/rotZ),
+    // so scene (wx, wz) maps directly to grid (col, row).
+    // PlaneGeometry:  lx = wx,  ly = -wz  (after Rx(-π/2))
+    // col = (lx + half) / cell = (wx + half) / cell
+    // row = (half - ly) / cell = (half + wz) / cell
     const fc = (wx + half) / cell;
     const fr = (wz + half) / cell;
+
     const c0 = Math.floor(fc), r0 = Math.floor(fr);
-    const c1 = c0 + 1, r1 = r0 + 1;
+    const c1 = c0 + 1,         r1 = r0 + 1;
     if (c0 < 0 || r0 < 0 || c1 >= COLS || r1 >= ROWS) return 0;
 
     const tx = fc - c0, tz = fr - r0;
@@ -304,7 +321,49 @@ export class CityMap {
     const h10 = this._terrainHeights[r0 * COLS + c1];
     const h01 = this._terrainHeights[r1 * COLS + c0];
     const h11 = this._terrainHeights[r1 * COLS + c1];
-    return h00 * (1-tx)*(1-tz) + h10 * tx*(1-tz) + h01 * (1-tx)*tz + h11 * tx*tz;
+    return h00*(1-tx)*(1-tz) + h10*tx*(1-tz) + h01*(1-tx)*tz + h11*tx*tz;
+  }
+
+  /**
+   * Rebuild the terrain mesh UV attribute to map the aerial photo texture
+   * onto the scene-space geometry using the same visual alignment as the
+   * old calibrated mesh (offset/rotZ/scale), but without deforming heights.
+   *
+   * Derivation: with old mesh at pos(PX,0,PZ), scale S, Rz(rotZ), a scene
+   * point (wx,wz) had old-mesh local coords:
+   *   lx = (wx - PX) / (S · cos(rotZ))
+   *   ly = -(wz - PZ) / S
+   * and old UV:  u = (lx + 550) / 1100,  v = (550 - ly) / 1100
+   */
+  private _rebuildAerialUVs(): void {
+    const COLS = this._terrainCols;
+    const ROWS = this._terrainRows;
+    const HALF = 550;
+    const CELL = (HALF * 2) / (COLS - 1);
+    const S    = this._aerialScale;
+    const PX   = this._aerialOffsetX;
+    const PZ   = this._aerialOffsetZ;
+    const cosR = Math.cos(this._aerialRotZ);
+
+    const uvs = new Float32Array(COLS * ROWS * 2);
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const wx = -HALF + col * CELL;
+        const wz = -HALF + row * CELL;
+        const lx = (wx - PX) / (S * cosR);
+        const ly = -(wz - PZ) / S;
+        const idx = (row * COLS + col) * 2;
+        uvs[idx    ] = (lx + HALF) / (HALF * 2);
+        uvs[idx + 1] = (HALF - ly) / (HALF * 2);
+      }
+    }
+    const geo = this.aerialMesh.geometry as THREE.BufferGeometry;
+    if (geo.attributes.uv) {
+      (geo.attributes.uv as THREE.BufferAttribute).set(uvs);
+      geo.attributes.uv.needsUpdate = true;
+    } else {
+      geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    }
   }
   // ── Facade wall mesh builder ─────────────────────────────────────────────────
 
@@ -557,24 +616,24 @@ export class CityMap {
   // ── Static world geometry ────────────────────────────────────────────────────────────
 
   private _createGround() {
-    // Subdivided terrain mesh: 101×101 vertices over 1100×1100 m
-    // Heights will be filled by _applyTerrain() once the binary loads.
-    const geo  = new THREE.PlaneGeometry(1100, 1100, 100, 100);
+    // Subdivided terrain mesh: 551×551 vertices over 1100×1100 m (2 m/vertex, matches LiDAR).
+    // The mesh sits at IDENTITY in scene space (only rotation.x = -π/2 to flip plane
+    // from XY to XZ).  No scale / rotation.z / position offset — those caused the mesh
+    // geometry to distort, making terrain heights wrong.
+    //
+    // Aerial texture calibration is instead baked into a custom UV attribute via
+    // _rebuildAerialUVs(), which applies the inverse of the old mesh transform.
+    // To recalibrate: press F4, adjust as before, paste the 4 snippet lines into the
+    // _aerialOffset/RotZ/Scale private fields above.  The snippet format is unchanged.
+    const geo  = new THREE.PlaneGeometry(1100, 1100, 550, 550);
     const mesh = new THREE.Mesh(geo, MAT_GROUND);
     mesh.rotation.x    = -Math.PI / 2;
     mesh.receiveShadow = true;
-    // Calibration from TextureCalibrator tool (F4) — paste the 3 lines from the exit snippet here
-    //mesh.position.x    = 34.0;      // offsetX  (metres)
-    //mesh.position.z    = -78.0;     // offsetZ  (metres)
-    //mesh.rotation.z    = -0.069813; // rotation (RADIANS) = -4.00°
-    //mesh.scale.set(1.0, 1.0, 1.0);  // scale — adjust with [ / ] in F4 calibrator
-    mesh.position.x = 66.0;
-    mesh.position.z = -20.0;
-    mesh.rotation.z = -0.069813;
-    mesh.scale.set(1.430000, 1.430000, 1.430000);
+    // NO position / rotation.z / scale here — see _aerialOffset/RotZ/Scale fields above.
 
     this.aerialMesh    = mesh;
     this.group.add(mesh);
+    this._rebuildAerialUVs();
 
     // Async: swap to aerial photo texture if available (generated by scripts/crop-aerial.py)
     const loader = new THREE.TextureLoader();
@@ -802,31 +861,34 @@ export class CityMap {
     this._buildGrid();
   }
 
-  /** Move the ground/aerial mesh in XZ — used by TextureCalibrator to align the photo. */
+  /** Shift the aerial texture in XZ (metres) — used by TextureCalibrator (F4). */
   setAerialOffset(x: number, z: number): void {
-    this.aerialMesh.position.x = x;
-    this.aerialMesh.position.z = z;
+    this._aerialOffsetX = x;
+    this._aerialOffsetZ = z;
+    this._rebuildAerialUVs();
   }
 
   getAerialOffset(): { x: number; z: number } {
-    return { x: this.aerialMesh.position.x, z: this.aerialMesh.position.z };
+    return { x: this._aerialOffsetX, z: this._aerialOffsetZ };
   }
 
-  /** Rotate the ground/aerial mesh around the world Y axis (radians). */
+  /** Rotate the aerial texture around world Y (radians) — used by TextureCalibrator (F4). */
   setAerialRotation(radians: number): void {
-    this.aerialMesh.rotation.z = radians;
+    this._aerialRotZ = radians;
+    this._rebuildAerialUVs();
   }
 
   getAerialRotation(): number {
-    return this.aerialMesh.rotation.z;
+    return this._aerialRotZ;
   }
 
   setAerialScale(s: number): void {
-    this.aerialMesh.scale.set(s, s, s);
+    this._aerialScale = s;
+    this._rebuildAerialUVs();
   }
 
   getAerialScale(): number {
-    return this.aerialMesh.scale.x;
+    return this._aerialScale;
   }
 
   // ── Public collision API ───────────────────────────────────────────────────
@@ -836,13 +898,28 @@ export class CityMap {
     return this._grid ? this._grid.query(position, radius) : this.colliders;
   }
 
-  checkCollision(position: THREE.Vector3, radius = 3): boolean {
-    this._scratchBox.setFromCenterAndSize(
-      position,
-      this._scratchSize.set(radius * 2, radius * 2, radius * 2),
-    );
-    for (const col of this.queryBuildings(position, radius)) {
-      if (this._scratchBox.intersectsBox(col)) return true;
+  /**
+   * Sphere-vs-AABB collision test.
+   *
+   * `inset` (XZ only) shrinks the effective footprint to compensate for AABB
+   * over-approximation of irregular (L/U-shaped) building footprints.
+   *
+   * `topMargin` lowers the effective roof surface.  GML height data stores the
+   * absolute peak of the roof ridge; for pitched roofs the catchable flat-eave
+   * zone is 1–2 m below that peak.  Without this margin the player dies while
+   * visually flying above the building because the AABB "roof" extends peak
+   * height over the entire footprint.
+   */
+  checkCollision(position: THREE.Vector3, radius = 1.0, inset = 1.0, topMargin = 1.5): boolean {
+    for (const col of this.queryBuildings(position, radius + inset + 1)) {
+      // Effective roof: pull down by topMargin (floor at minY so the box is never inverted).
+      const effectiveMaxY = Math.max(col.max.y - topMargin, col.min.y);
+      this._scratchPt.set(
+        Math.max(col.min.x + inset, Math.min(col.max.x - inset, position.x)),
+        Math.max(col.min.y,         Math.min(effectiveMaxY,      position.y)),
+        Math.max(col.min.z + inset, Math.min(col.max.z - inset, position.z)),
+      );
+      if (this._scratchPt.distanceTo(position) < radius) return true;
     }
     return false;
   }

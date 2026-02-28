@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AircraftDef, AircraftId, InputState } from '../shared/types';
 import { AIRCRAFT, AI_SPAWN_POINTS, AI_PILOT_NAMES, PHYSICS } from '../shared/constants';
+import { t } from '../i18n';
 
 import { FlightPhysics } from '../physics/FlightPhysics';
 import { createAircraftModel } from '../entities/AircraftModel';
@@ -41,8 +42,6 @@ const _probePos         = new THREE.Vector3();
 const _closestPt        = new THREE.Vector3();
 const _awayVec          = new THREE.Vector3();
 const _avoidance        = new THREE.Vector3();
-const _aiBuildingBox    = new THREE.Box3();
-const _aiBuildingSize   = new THREE.Vector3();
 
 export class CombatManager {
   private scene: THREE.Scene;
@@ -496,13 +495,8 @@ export class CombatManager {
   }
   
   private checkBuildingCollision(position: THREE.Vector3, cityMap: CityMap): boolean {
-    // Use a generous 2m sphere approximation so fast-moving planes with
-    // velocity momentum can't slip through a building in a single frame.
-    _aiBuildingBox.setFromCenterAndSize(position, _aiBuildingSize.set(2.0, 1.0, 2.0));
-    for (const collider of cityMap.queryBuildings(position, 3)) {
-      if (_aiBuildingBox.intersectsBox(collider)) return true;
-    }
-    return false;
+    // Use radius=2m, no XZ inset (AI should crash into walls), default topMargin.
+    return cityMap.checkCollision(position, 2.0, 0);
   }
   
   private killEnemy(enemy: AIPlane, cause: string, now?: number) {
@@ -571,7 +565,7 @@ export class CombatManager {
       if (tracerPos.distanceTo(enemy.physics.position) < 5) {
         enemy.health -= damage;
         if (enemy.health <= 0) {
-          const deathPos = this.killEnemy(enemy, 'shot down in a dogfight', performance.now());
+            const deathPos = this.killEnemy(enemy, t('kill.dogfight'), performance.now());
           if (deathPos) onHit(enemy, deathPos);
         }
         return true;
@@ -597,11 +591,11 @@ export class CombatManager {
           this.hitMarkerTimer = 0.3;
           
           if (enemy.health <= 0) {
-            const deathPos = this.killEnemy(enemy, 'shot down', performance.now());
+            const deathPos = this.killEnemy(enemy, t('kill.shotDown'), performance.now());
             if (deathPos) onHit(enemy, deathPos);
             this.playerKills++;
             this.killFeed.push({
-              text: `You shot down ${enemy.aircraftDef.name}`,
+              text: t('kill.youShotDown', enemy.aircraftDef.name),
               time: performance.now(),
             });
           }
@@ -629,7 +623,7 @@ export class CombatManager {
         this.playerDeaths++;
         this.playerRespawnTimer = 3;
         this.killFeed.push({
-          text: 'You were shot down!',
+          text: t('kill.youWereShot'),
           time: performance.now(),
         });
       }

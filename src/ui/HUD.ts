@@ -1,4 +1,5 @@
 import { CameraMode, AircraftDef } from '../shared/types';
+import { t } from '../i18n';
 
 /**
  * HTML overlay HUD for flight information and combat feedback.
@@ -261,7 +262,7 @@ export class HUD {
       
       <div class="hud-alt">
         <div class="value">0</div>
-        <div class="unit">m ALT</div>
+        <div class="unit hud-alt-unit">m ALT</div>
       </div>
       
       <div class="hud-health-bar"><div class="hud-health-fill"></div></div>
@@ -282,16 +283,16 @@ export class HUD {
 
       <div class="hud-controls">
         <div class="ctrl-row">
-          <span><kbd>W</kbd><kbd>S</kbd> Pitch</span>
-          <span><kbd>A</kbd><kbd>D</kbd> Roll</span>
-          <span><kbd>Q</kbd><kbd>E</kbd> Yaw</span>
-          <span><kbd>Shift</kbd> Throttle Up</span>
-          <span><kbd>Ctrl</kbd> Throttle Down</span>
+          <span><kbd>W</kbd><kbd>S</kbd> <span class="lbl-pitch"></span></span>
+          <span><kbd>A</kbd><kbd>D</kbd> <span class="lbl-roll"></span></span>
+          <span><kbd>Q</kbd><kbd>E</kbd> <span class="lbl-yaw"></span></span>
+          <span><kbd>Shift</kbd> <span class="lbl-tup"></span></span>
+          <span><kbd>Ctrl</kbd> <span class="lbl-tdown"></span></span>
         </div>
         <div class="ctrl-row">
-          <span><kbd>Space</kbd> / Left Click: Fire</span>
-          <span><kbd>V</kbd> Toggle Camera</span>
-          <span>Mouse · flight control</span>
+          <span><kbd>Space</kbd> / <span class="lbl-fire"></span></span>
+          <span><kbd>V</kbd> <span class="lbl-cam"></span></span>
+          <span class="lbl-mouse"></span>
         </div>
       </div>
     `;
@@ -313,6 +314,7 @@ export class HUD {
     this.minimap = this.container.querySelector('.hud-minimap')!;
     this.minimapCtx = this.minimap.getContext('2d')!;
     this.msgEl = this.container.querySelector('.hud-msg')!;
+    this._applyLangLabels();
   }
   
   update(data: {
@@ -379,9 +381,9 @@ export class HUD {
     if (!data.alive) {
       this.respawnEl.style.display = 'block';
       this.respawnEl.innerHTML = `
-        SHOT DOWN<br>
+        ${t('hud.shotDown')}<br>
         <div class="timer">${Math.ceil(data.respawnTimer)}</div>
-        <div style="font-size:16px; opacity:0.7">Respawning...</div>
+        <div style="font-size:16px; opacity:0.7">${t('hud.respawning')}</div>
       `;
     } else {
       this.respawnEl.style.display = 'none';
@@ -460,6 +462,20 @@ export class HUD {
     ctx.restore();
   }
   
+  private _applyLangLabels() {
+    const q = (sel: string) => this.container.querySelector(sel) as HTMLElement | null;
+    const set = (sel: string, key: string) => { const el = q(sel); if (el) el.textContent = t(key); };
+    set('.hud-alt-unit',  'hud.alt');
+    set('.lbl-pitch',  'menu.ctrl.pitch');
+    set('.lbl-roll',   'menu.ctrl.roll');
+    set('.lbl-yaw',    'menu.ctrl.yaw');
+    set('.lbl-tup',    'menu.ctrl.throttleUp');
+    set('.lbl-tdown',  'menu.ctrl.throttleDown');
+    set('.lbl-fire',   'menu.ctrl.fire');
+    set('.lbl-cam',    'menu.ctrl.camera');
+    set('.lbl-mouse',  'menu.ctrl.mouse');
+  }
+
   showMessage(text: string, duration: number = 3000) {
     this.msgEl.textContent = text;
     this.msgEl.style.opacity = '0.9';

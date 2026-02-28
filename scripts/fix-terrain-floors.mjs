@@ -1,39 +1,37 @@
 /**
- * fix-terrain-floors.mjs  v4
+ * fix-terrain-floors.mjs  v5
  *
  * Post-processor for kerava-terrain.bin.
- * Run via `npm run fix-terrain` which FIRST regenerates a fresh IDW baseline
- * with `preprocess-gml`, then applies this script — no contamination possible.
+ * Run AFTER scripts/extract-terrain.py (which writes the LiDAR baseline).
  *
- * This version correctly accounts for the runtime terrain mesh offset & rotation
- * (position.x=34, position.z=-78, rotation.z=-0.069813) applied in CityMap.ts,
- * and uses per-building floorCorners extracted from CityGML GroundSurface data.
+ * This version uses a direct world-space grid mapping (matching terrainHeightAt
+ * in CityMap.ts) and the 551×551 / 2 m grid from extract-terrain.py.
  *
- * The terrain mesh transform at runtime:
- *   M = Rx(-π/2) · Rz(-0.069813)
- *   world = meshPosition + M · local
- *
- * Without accounting for this, stamped heights land ~3 columns and ~7 rows off
- * from the intended building positions, causing buildings to float or sink.
+ * Grid mapping (identical to CityMap.terrainHeightAt):
+ *   col = (wx + 550) / 2
+ *   row = (wz + 550) / 2
+ *   wx  = -550 + col * 2
+ *   wz  = -550 + row * 2
  *
  * Strategy:
  *
  *   For each building, convert its world-space footprint to terrain grid space
- *   using the inverse mesh transform, then stamp terrain heights to match.
+ *   and stamp terrain heights to match.
  *
  *   Zone A  (dist < INNER_DIST from building AABB):
  *     Set terrain = IDW-interpolated floor height from floorCorners.
  *     Bidirectional (raises AND lowers), so buildings neither float nor sink.
  *
  *   Zone B  (INNER_DIST <= dist < GRAD_DIST):
- *     Smoothstep blend from floor height → original IDW terrain.
+ *     Smoothstep blend from floor height → original LiDAR terrain.
  *
  *   Blur — box-blur passes over dirty region + 1-cell border.
  *
  *   Re-enforce — re-stamp Zone A after blur; apply gradient as floor (minimum).
  *
  * Usage:
- *   npm run fix-terrain          (chains preprocess-gml automatically)
+ *   python scripts/extract-terrain.py   (generate LiDAR baseline first)
+ *   node scripts/fix-terrain-floors.mjs
  */
 
 import { readFileSync, writeFileSync } from 'fs';
@@ -46,44 +44,27 @@ const ROOT      = resolve(__dirname, '..');
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TERRAIN_HALF = 550;
-const TERRAIN_SEGS = 100;
-const COLS         = TERRAIN_SEGS + 1;                  // 101
-const ROWS         = TERRAIN_SEGS + 1;                  // 101
-const CELL_SIZE    = (TERRAIN_HALF * 2) / TERRAIN_SEGS; // 11 m
+const TERRAIN_SEGS = 550;
+const COLS         = TERRAIN_SEGS + 1;                  // 551
+const ROWS         = TERRAIN_SEGS + 1;                  // 551
+const CELL_SIZE    = (TERRAIN_HALF * 2) / TERRAIN_SEGS; // 2 m (matches LiDAR resolution)
 
-// Zone A: full cell expansion — catches sub-cell and thin buildings
-const INNER_DIST = CELL_SIZE * 1.0;                     // 11 m
+// Zone A: 1.5 cells (3 m) — stamps the DTM exactly at building footprint + thin margin
+// Bidirectional so buildings neither float nor sink vs. the real ground DTM.
+const INNER_DIST = CELL_SIZE * 1.5;                     // 3 m
 
-// Gradient zone: 6 cells out from INNER_DIST boundary
-const GRAD_CELLS = 6;
-const GRAD_DIST  = INNER_DIST + GRAD_CELLS * CELL_SIZE; // 11 + 66 = 77 m
+// Gradient zone: 8 cells (16 m blend) — tight enough to avoid berms between buildings
+const GRAD_CELLS = 8;
+const GRAD_DIST  = INNER_DIST + GRAD_CELLS * CELL_SIZE; //  3 + 16 = 19 m
 
-const BLUR_PASSES = 12;
+const BLUR_PASSES = 2;
 
-// ── Terrain mesh runtime transform (from CityMap.ts _createGround) ────────────
-//
-// The aerial mesh has these calibration offsets so the aerial photo texture aligns
-// with the building geometry:
-//   mesh.position.x = 34.0
-//   mesh.position.z = -78.0
-//   mesh.rotation.z = -0.069813  (≈ -4°)
-//
-// Combined with rotation.x = -π/2 (plane flip), the full rotation matrix is:
-//   M = Rx(-π/2) · Rz(-0.069813)
-//
-// For a grid vertex with local coords (lx, ly, lz):
-//   world_x = 34  + cos(α)·lx + sin(α)·ly
-//   world_y =       lz                        (= stored height value)
-//   world_z = -78 + sin(α)·lx - cos(α)·ly
-//
-// where α = 0.069813 (the positive angle; Rz uses -α).
-
-const OFFSET_X  = 34.0;
-const OFFSET_Z  = -78.0;
-const ROT_ANGLE = 0.069813;
-
-const COS_A = Math.cos(ROT_ANGLE); // ≈ 0.99756
-const SIN_A = Math.sin(ROT_ANGLE); // ≈ 0.06976
+// Grid ↔ world mapping mirrors CityMap.terrainHeightAt exactly (no mesh offsets):
+//   col = (wx + TERRAIN_HALF) / CELL_SIZE
+//   row = (wz + TERRAIN_HALF) / CELL_SIZE
+// The aerial texture mesh has visual calibration offsets (position/rotation/scale)
+// that only affect the photo overlay — terrainHeightAt and this script both use
+// the raw world-aligned grid.
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 
@@ -111,37 +92,23 @@ console.log(`[fix-terrain] ${buildings.length} buildings to process`);
 // ── Transform helpers ─────────────────────────────────────────────────────────
 
 /**
- * Convert world (wx, wz) → terrain grid (col, row) using the inverse mesh transform.
- *
- * Derivation:
- *   local = M^T · (world − position)     (M is orthogonal so M⁻¹ = M^T)
- *   lx = cos(α)·(wx − 34) + sin(α)·(wz + 78)
- *   ly = sin(α)·(wx − 34) − cos(α)·(wz + 78)
- *   col = (lx + 550) / 11
- *   row = (550 − ly) / 11
+ * Convert world (wx, wz) → terrain grid (col, row).
+ * Mirrors CityMap.terrainHeightAt — direct world-aligned mapping, no mesh offsets.
  */
 function worldToGrid(wx, wz) {
-  const dx = wx - OFFSET_X;
-  const dz = wz - OFFSET_Z; // = wz + 78
-  const lx =  COS_A * dx + SIN_A * dz;
-  const ly =  SIN_A * dx - COS_A * dz;
-  return [(lx + TERRAIN_HALF) / CELL_SIZE, (TERRAIN_HALF - ly) / CELL_SIZE];
+  return [
+    (wx + TERRAIN_HALF) / CELL_SIZE,
+    (wz + TERRAIN_HALF) / CELL_SIZE,
+  ];
 }
 
 /**
- * Convert grid (col, row) → world (wx, wz) using the forward mesh transform.
- *
- *   lx = −550 + col · 11
- *   ly =  550 − row · 11
- *   wx = 34  + cos(α)·lx + sin(α)·ly
- *   wz = −78 + sin(α)·lx − cos(α)·ly
+ * Convert terrain grid (col, row) → world (wx, wz).
  */
 function gridToWorld(col, row) {
-  const lx = -TERRAIN_HALF + col * CELL_SIZE;
-  const ly =  TERRAIN_HALF - row * CELL_SIZE;
   return [
-    OFFSET_X + COS_A * lx + SIN_A * ly,
-    OFFSET_Z + SIN_A * lx - COS_A * ly,
+    -TERRAIN_HALF + col * CELL_SIZE,
+    -TERRAIN_HALF + row * CELL_SIZE,
   ];
 }
 
