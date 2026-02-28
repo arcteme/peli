@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kerava Enriched Metadata Schema",
+  "description": "Schema for data/kerava-enriched.json — developer annotations for buildings and POIs.\n\nThis file IS committed to git. Each entry links a building or POI to custom\ndesign data by NLS GML id and/or OSM element id.\n\nThe 'public' sub-object on each entry will be merged into the corresponding\nelement in public/kerava-pois.json by scripts/strip-meta.mjs. All other fields\nare private and never leave the data/ directory.",
+  "type": "object",
+  "required": ["entries"],
+  "properties": {
+    "description": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nlsId": {
+            "type": "string",
+            "description": "NLS GML building id (from bldg:Building gml:id attribute, e.g. 'fi.nls.0_1.2_r.100000001'). Matches buildings[].id in data/kerava-meta-full.json."
+          },
+          "osmId": {
+            "type": ["integer", "string"],
+            "description": "OSM element id (from data/kerava-osm-raw.json elements[].id). Use when annotating OSM nodes/ways/relations."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Private developer notes, design ideas, references. NEVER included in public output."
+          },
+          "spawnPoints": {
+            "type": "array",
+            "description": "Private: candidate spawn positions relative to building centre [x, y, z] in scene-space metres.",
+            "items": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "osm": {
+            "type": "object",
+            "description": "Auto-populated by scripts/enrich-osm.mjs. DO NOT edit manually — re-running the script will overwrite this block. Contains the matched OSM way id, harvested tags, derived game category and match quality stats.",
+            "properties": {
+              "id":        { "type": "integer", "description": "OSM way id" },
+              "version":   { "type": "integer" },
+              "timestamp": { "type": "string" },
+              "category": {
+                "type": "string",
+                "enum": ["residential", "commercial", "civic", "industrial", "unknown"],
+                "description": "Game category derived from osm.tags.building value."
+              },
+              "tags": {
+                "type": "object",
+                "description": "Harvested OSM tags for this building.",
+                "properties": {
+                  "building":           { "type": "string" },
+                  "building:colour":    { "type": "string", "description": "Hex wall colour e.g. '#E7E0D0'" },
+                  "building:levels":    { "type": "string" },
+                  "roof:colour":        { "type": "string" },
+                  "roof:shape":         { "type": "string", "enum": ["flat", "gabled", "hipped", "pyramidal", "skillion", "mansard", "gambrel", "half-hipped", "dome", "onion", "cone", "round"] },
+                  "height":             { "type": "string" },
+                  "name":               { "type": "string" },
+                  "name:fi":            { "type": "string" },
+                  "addr:street":        { "type": "string" },
+                  "addr:housenumber":   { "type": "string" },
+                  "addr:city":          { "type": "string" },
+                  "amenity":            { "type": "string" },
+                  "shop":               { "type": "string" },
+                  "office":             { "type": "string" }
+                },
+                "additionalProperties": true
+              },
+              "match": {
+                "type": "object",
+                "description": "Spatial match quality between this OSM way and the NLS building footprint.",
+                "properties": {
+                  "quality":      { "type": "string", "enum": ["high", "medium", "low"], "description": "high = IoU>0.5, medium = IoU 0.1-0.5, low = centroid-distance only (concave footprint or weak overlap)." },
+                  "centroidDist": { "type": "number", "description": "Distance between polygon centroids in metres." },
+                  "iou":          { "type": "number", "description": "Intersection-over-union of 2D footprint polygons (0–1). May be 0 for concave buildings." }
+                }
+              }
+            },
+            "additionalProperties": true
+          },
+          "publicOverrides": {
+            "type": "object",
+            "description": "Developer-controlled overrides that take precedence over auto-detected OSM values in the public client output. Set these manually for corrections or artistic choices.",
+            "properties": {
+              "wallColour":  { "type": "string", "description": "Override wall colour hex, e.g. '#D4CDC4'. Supersedes osm.tags['building:colour']." },
+              "roofColour":  { "type": "string", "description": "Override roof colour hex. Supersedes osm.tags['roof:colour']." },
+              "roofShape":   { "type": "string", "description": "Override roof shape string. Supersedes osm.tags['roof:shape']." },
+              "category":    { "type": "string", "enum": ["residential", "commercial", "civic", "industrial", "unknown"], "description": "Override game category. Supersedes both geometry heuristic and OSM-derived category." },
+              "label":       { "type": "string", "description": "HUD display label shown to the player." }
+            },
+            "additionalProperties": false
+          },
+          "public": {
+            "type": "object",
+            "description": "Fields to merge into public/kerava-pois.json for the matching OSM element (POI path only). Keep this minimal — players will see these.",
+            "properties": {
+              "label":       { "type": "string", "description": "Display name override shown in the game HUD, if different from OSM name tag." },
+              "icon":        { "type": "string", "description": "Icon key used by the HUD renderer (e.g. 'station', 'shop', 'park')." },
+              "description": { "type": "string", "description": "Short flavour text shown to the player when near this POI." }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

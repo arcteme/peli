@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/strip-meta.mjs && vite build",
     "preview": "vite preview",
-    "preprocess-gml": "node scripts/process-gml.mjs",
-    "fix-terrain": "npm run preprocess-gml && node scripts/fix-terrain-floors.mjs",
-    "crop-aerial": "python scripts/crop-aerial.py"
+    "preprocess-gml": "node scripts/process-gml.mjs && node scripts/strip-meta.mjs",
+    "fix-terrain": "npm run preprocess-gml && node scripts/fix-terrain-floors.mjs && node scripts/strip-meta.mjs",
+    "fetch-osm": "node scripts/fetch-osm.mjs",
+    "enrich-osm": "node scripts/enrich-osm.mjs && node scripts/strip-meta.mjs",
+    "strip-meta": "node scripts/strip-meta.mjs",
+    "crop-aerial": "python scripts/crop-aerial.py",
+    "gen-facades": "python scripts/generate-facade-textures.py"
   },
   "keywords": [],
   "author": "",

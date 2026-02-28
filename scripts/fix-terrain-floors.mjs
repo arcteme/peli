@@ -88,7 +88,7 @@ const SIN_A = Math.sin(ROT_ANGLE); // ≈ 0.06976
 // ── Load ──────────────────────────────────────────────────────────────────────
 
 const terrainPath = resolve(ROOT, 'public/kerava-terrain.bin');
-const metaPath    = resolve(ROOT, 'public/kerava-meta.json');
+const metaPath    = resolve(ROOT, 'data/kerava-meta-full.json');
 
 console.log('[fix-terrain] Reading kerava-terrain.bin ...');
 const terrainBuf = readFileSync(terrainPath);
@@ -103,7 +103,7 @@ const heights = new Float32Array(
 // Snapshot original IDW terrain — gradient blends back to this
 const original = heights.slice();
 
-console.log('[fix-terrain] Reading kerava-meta.json ...');
+console.log('[fix-terrain] Reading kerava-meta-full.json ...');
 const meta      = JSON.parse(readFileSync(metaPath, 'utf8'));
 const buildings = meta.buildings;
 console.log(`[fix-terrain] ${buildings.length} buildings to process`);

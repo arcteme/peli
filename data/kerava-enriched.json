@@ -1,0 +1,3470 @@
+{
+  "$schema": "./enriched-schema.json",
+  "description": "Developer annotations for Kerava buildings and POIs. Linked to NLS dataset by 'nslId' and/or OSM dataset by 'osmId'.",
+  "entries": [
+    {
+      "nlsId": "helsinki_2020_514201",
+      "osm": {
+        "id": 1071331260,
+        "tags": {
+          "building": "yes",
+          "building:colour": "#8F706A",
+          "building:levels": "3",
+          "roof:colour": "salmon",
+          "roof:shape": "flat",
+          "name": "Prisma-keskus Kerava",
+          "addr:street": "Kauppakaari",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava",
+          "shop": "mall"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514221",
+      "osm": {
+        "id": 1072437181,
+        "tags": {
+          "building": "roof",
+          "building:colour": "white",
+          "building:levels": "1",
+          "roof:colour": "#b6b6b6",
+          "roof:shape": "gabled"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514229",
+      "osm": {
+        "id": 41604575,
+        "tags": {
+          "building": "yes",
+          "building:colour": "#546E8C",
+          "building:levels": "2",
+          "roof:colour": "#4D4446",
+          "name": "Keravan Kaupungintalo",
+          "addr:street": "Kauppakaari",
+          "addr:housenumber": "11",
+          "addr:city": "Kerava",
+          "amenity": "townhall"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 12,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514245",
+      "osm": {
+        "id": 125314135,
+        "tags": {
+          "building": "parking",
+          "building:levels": "2",
+          "roof:colour": "#BFC4C0",
+          "name": "Keravan tornipysäköinti",
+          "addr:street": "Välikuja",
+          "addr:housenumber": "8",
+          "addr:city": "Kerava",
+          "amenity": "parking"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514269",
+      "osm": {
+        "id": 303366575,
+        "tags": {
+          "building": "civic",
+          "building:colour": "white",
+          "building:levels": "6",
+          "roof:colour": "#5e6867",
+          "roof:shape": "flat",
+          "name": "Sampolan palvelukeskus",
+          "addr:street": "Kultasepänkatu",
+          "addr:housenumber": "7",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514273",
+      "osm": {
+        "id": 750094718,
+        "tags": {
+          "building": "parking",
+          "building:levels": "2",
+          "roof:shape": "flat",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "13",
+          "addr:city": "Kerava",
+          "amenity": "parking"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514293",
+      "osm": {
+        "id": 60960076,
+        "tags": {
+          "building": "yes",
+          "building:colour": "#C0C0C0",
+          "building:levels": "3",
+          "roof:colour": "#BFC4C0",
+          "addr:street": "Asemantie",
+          "addr:city": "Kerava",
+          "amenity": "parking"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 1.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514309",
+      "osm": {
+        "id": 1072437180,
+        "tags": {
+          "building": "yes",
+          "building:levels": "2",
+          "roof:shape": "flat",
+          "addr:street": "Kultasepänkatu",
+          "addr:housenumber": "5",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514337",
+      "osm": {
+        "id": 243586782,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "#6F3718",
+          "building:levels": "5",
+          "roof:colour": "#5A6060",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "1A, 1B"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514341",
+      "osm": {
+        "id": 65627130,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "4A,4B,4C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514349",
+      "osm": {
+        "id": 65623586,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "8A,8B,8C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514353",
+      "osm": {
+        "id": 65623600,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Puualhonpolku",
+          "addr:housenumber": "3A,3B,3C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 8,
+          "iou": 0.413
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514365",
+      "osm": {
+        "id": 61829064,
+        "tags": {
+          "building": "residential",
+          "building:levels": "5",
+          "roof:shape": "gabled",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "20",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514373",
+      "osm": {
+        "id": 82124429,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "4",
+          "roof:shape": "flat",
+          "addr:street": "Lapilantie",
+          "addr:housenumber": "8A, 8B, 8C, 8D",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514377",
+      "osm": {
+        "id": 82124432,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "4",
+          "roof:shape": "flat",
+          "addr:street": "Lepolantie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 3.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514389",
+      "osm": {
+        "id": 82102390,
+        "tags": {
+          "building": "yes",
+          "name": "Keravan helluntaiseurakunta",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava",
+          "amenity": "place_of_worship"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514397",
+      "osm": {
+        "id": 328163220,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "tan",
+          "building:levels": "5",
+          "roof:colour": "red",
+          "roof:shape": "gabled",
+          "addr:street": "Eerontie",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514405",
+      "osm": {
+        "id": 61652857,
+        "tags": {
+          "building": "residential",
+          "building:levels": "5",
+          "roof:shape": "skillion",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "1A,1B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 22.8,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514453",
+      "osm": {
+        "id": 65623590,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "3A,3B,3C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 6.4,
+          "iou": 0.41
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514461",
+      "osm": {
+        "id": 82102377,
+        "tags": {
+          "building": "residential",
+          "building:levels": "5",
+          "roof:shape": "skillion",
+          "addr:street": "Sampolankaari",
+          "addr:housenumber": "4A, 4B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514465",
+      "osm": {
+        "id": 816926216,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "8",
+          "roof:colour": "black",
+          "roof:shape": "flat",
+          "name": "As Oy Keravan Aleksinkaarre",
+          "addr:street": "Kauppakaari",
+          "addr:housenumber": "12",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514473",
+      "osm": {
+        "id": 817265964,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "6",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "23",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514477",
+      "osm": {
+        "id": 41292528,
+        "tags": {
+          "building": "public",
+          "building:colour": "#BE8571",
+          "building:levels": "1",
+          "roof:colour": "#5a6060",
+          "roof:shape": "flat"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514485",
+      "osm": {
+        "id": 65623587,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "1A,1B,1C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514505",
+      "osm": {
+        "id": 82124434,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "4",
+          "roof:shape": "flat",
+          "addr:street": "Hakalantie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514517",
+      "osm": {
+        "id": 65627152,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Puualhonpolku",
+          "addr:housenumber": "5A,5B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 6.3,
+          "iou": 0.574
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514529",
+      "osm": {
+        "id": 1428076445,
+        "tags": {
+          "building": "yes"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514537",
+      "osm": {
+        "id": 116955889,
+        "tags": {
+          "building": "church",
+          "name": "Keravan kirkko",
+          "addr:street": "Papintie",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava",
+          "amenity": "place_of_worship"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514545",
+      "osm": {
+        "id": 88869608,
+        "tags": {
+          "building": "mosque",
+          "building:levels": "1",
+          "roof:shape": "gabled",
+          "name": "Kerava Mosque",
+          "addr:street": "Lintulammenkatu",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 8.9,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514549",
+      "osm": {
+        "id": 41292527,
+        "tags": {
+          "building": "retail",
+          "building:colour": "tan",
+          "building:levels": "3",
+          "roof:colour": "#BFC4C0",
+          "roof:shape": "gabled"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514561",
+      "osm": {
+        "id": 1058434169,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "6",
+          "name": "As. Oy Keravan Kultaseppä",
+          "addr:street": "Lintulammenkatu",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514569",
+      "osm": {
+        "id": 56824303,
+        "tags": {
+          "building": "residential",
+          "building:colour": "#E7E0D0",
+          "building:levels": "3",
+          "roof:colour": "red",
+          "roof:shape": "gabled",
+          "addr:street": "Torikatu",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514581",
+      "osm": {
+        "id": 40349777,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "tan",
+          "building:levels": "3",
+          "roof:colour": "red",
+          "roof:shape": "gabled",
+          "addr:street": "Eerontie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514585",
+      "osm": {
+        "id": 65623585,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:shape": "flat",
+          "addr:street": "Puualhonpolku",
+          "addr:housenumber": "1A,1B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 0.7,
+          "iou": 0.984
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514605",
+      "osm": {
+        "id": 82102450,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "3",
+          "roof:shape": "gabled",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "7",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.3,
+          "iou": 0.075
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514609",
+      "osm": {
+        "id": 1072456672,
+        "tags": {
+          "building": "train_station",
+          "building:colour": "#F5DECE",
+          "building:levels": "1",
+          "roof:colour": "#5A6060",
+          "roof:shape": "gabled",
+          "name": "Keravan rautatieasema",
+          "addr:street": "Asemanaukio",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514613",
+      "osm": {
+        "id": 274198832,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "#E7E0D0",
+          "building:levels": "14",
+          "roof:colour": "#4D4446",
+          "roof:shape": "flat",
+          "height": "47",
+          "addr:street": "Kauppakaari",
+          "addr:housenumber": "13",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514617",
+      "osm": {
+        "id": 82102405,
+        "tags": {
+          "building": "yes",
+          "building:levels": "4",
+          "roof:shape": "gabled",
+          "addr:street": "Kultasepänkatu",
+          "addr:housenumber": "3"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514625",
+      "osm": {
+        "id": 813646477,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "tan",
+          "building:levels": "3",
+          "roof:colour": "#d96363",
+          "roof:shape": "saltbox",
+          "name": "As Oy Keravan Kuparilinna",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 3.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514629",
+      "osm": {
+        "id": 40349778,
+        "tags": {
+          "building": "office",
+          "building:levels": "2",
+          "roof:colour": "red",
+          "roof:shape": "gabled",
+          "addr:street": "Aleksis Kiven tie",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514633",
+      "osm": {
+        "id": 43549697,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "#E7E0D0",
+          "building:levels": "15",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "height": "60",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514637",
+      "osm": {
+        "id": 82102417,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "3",
+          "roof:shape": "gabled",
+          "addr:street": "Papintie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514649",
+      "osm": {
+        "id": 41292530,
+        "tags": {
+          "building": "terrace",
+          "building:colour": "tan",
+          "building:levels": "1",
+          "roof:colour": "#ca3f3f",
+          "roof:shape": "gabled",
+          "name": "As Oy Keravan Asemansilta 2",
+          "addr:street": "Asemansilta",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 9.4,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514657",
+      "osm": {
+        "id": 274198833,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "#E7E0D0",
+          "building:levels": "15",
+          "roof:colour": "#4D4446",
+          "roof:shape": "flat",
+          "height": "50",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514661",
+      "osm": {
+        "id": 65630301,
+        "tags": {
+          "building": "residential",
+          "building:levels": "6",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "7C,7D",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 7.8,
+          "iou": 0.108
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514669",
+      "osm": {
+        "id": 66321894,
+        "tags": {
+          "building": "retail",
+          "building:colour": "#DFD9A0",
+          "building:levels": "2",
+          "roof:colour": "#5A6060",
+          "roof:shape": "mansard",
+          "addr:street": "Asemanaukio",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514673",
+      "osm": {
+        "id": 40680505,
+        "tags": {
+          "building": "public",
+          "building:colour": "#E7E0D0",
+          "building:levels": "3",
+          "roof:colour": "#4D4446",
+          "roof:shape": "gabled",
+          "addr:street": "Aleksis Kiven tie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514677",
+      "osm": {
+        "id": 61652847,
+        "tags": {
+          "building": "residential",
+          "building:levels": "8",
+          "roof:shape": "saltbox",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "3B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 10.7,
+          "iou": 0.587
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514681",
+      "osm": {
+        "id": 721836242,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "6",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "25",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 14.4,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514689",
+      "osm": {
+        "id": 82102419,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "3",
+          "roof:shape": "gabled",
+          "addr:street": "Papintie",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 13.3,
+          "iou": 0.292
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514693",
+      "osm": {
+        "id": 816926213,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "9",
+          "roof:colour": "black",
+          "roof:shape": "flat",
+          "name": "As Oy Keravan Aleksinniitty",
+          "addr:street": "Seunalantie",
+          "addr:housenumber": "7",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514705",
+      "osm": {
+        "id": 750094720,
+        "tags": {
+          "building": "residential",
+          "building:levels": "6",
+          "roof:shape": "saltbox",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "15",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514725",
+      "osm": {
+        "id": 117092303,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "2",
+          "roof:shape": "flat",
+          "addr:street": "Aleksis Kiven tie",
+          "addr:housenumber": "14 C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.4,
+          "iou": 0.004
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514733",
+      "osm": {
+        "id": 117092305,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "2",
+          "addr:street": "Aleksis Kiven tie",
+          "addr:housenumber": "14 B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14,
+          "iou": 0.006
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514737",
+      "osm": {
+        "id": 750094721,
+        "tags": {
+          "building": "residential",
+          "building:levels": "6",
+          "roof:shape": "saltbox",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "17",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514749",
+      "osm": {
+        "id": 82102455,
+        "tags": {
+          "building": "yes",
+          "building:levels": "3",
+          "roof:shape": "skillion",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "6 A",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514769",
+      "osm": {
+        "id": 1058434170,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "8",
+          "roof:shape": "gabled",
+          "name": "As. Oy Keravan Platina",
+          "addr:street": "Lintulammenkatu",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514777",
+      "osm": {
+        "id": 721836244,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "8",
+          "addr:street": "Santaniitynkatu",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514781",
+      "osm": {
+        "id": 82604877,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "5",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 2.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514789",
+      "osm": {
+        "id": 742213178,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "8",
+          "roof:shape": "gabled",
+          "addr:street": "Lintulammenkatu",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514793",
+      "osm": {
+        "id": 82118380,
+        "tags": {
+          "building": "yes",
+          "building:levels": "4",
+          "roof:shape": "flat",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "4C",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514797",
+      "osm": {
+        "id": 82102453,
+        "tags": {
+          "building": "yes",
+          "building:levels": "3",
+          "roof:shape": "gabled",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "6B",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 6.4,
+          "iou": 0.407
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514801",
+      "osm": {
+        "id": 118685645,
+        "tags": {
+          "building": "yes",
+          "building:levels": "4",
+          "roof:shape": "skillion",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "4B",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514805",
+      "osm": {
+        "id": 82102448,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "4",
+          "roof:shape": "flat",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "5",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.9,
+          "iou": 0.036
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514813",
+      "osm": {
+        "id": 118685648,
+        "tags": {
+          "building": "shed",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "skillion",
+          "amenity": "parking"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "high",
+          "centroidDist": 13.3,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514817",
+      "osm": {
+        "id": 82102437,
+        "tags": {
+          "building": "yes",
+          "building:levels": "4",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514825",
+      "osm": {
+        "id": 82226356,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "4",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514829",
+      "osm": {
+        "id": 1059788570,
+        "tags": {
+          "building": "roof",
+          "building:levels": "1",
+          "roof:shape": "round"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 10,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514833",
+      "osm": {
+        "id": 42353468,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "roof:colour": "red",
+          "roof:shape": "mansard",
+          "name": "McDonald's",
+          "addr:street": "Puuvalonkatu",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava",
+          "amenity": "fast_food"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 13.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514837",
+      "osm": {
+        "id": 1059569025,
+        "tags": {
+          "building": "roof"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514841",
+      "osm": {
+        "id": 82102408,
+        "tags": {
+          "building": "yes",
+          "building:levels": "3",
+          "roof:shape": "gabled",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.3,
+          "iou": 0.065
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514845",
+      "osm": {
+        "id": 40349771,
+        "tags": {
+          "building": "yes",
+          "building:colour": "beige",
+          "building:levels": "2",
+          "roof:colour": "#5A6060",
+          "roof:shape": "hipped",
+          "name": "Vanha Postitalo",
+          "addr:street": "Asemanaukio",
+          "addr:housenumber": "1"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514853",
+      "osm": {
+        "id": 117092301,
+        "tags": {
+          "building": "retail",
+          "building:levels": "1",
+          "roof:shape": "flat",
+          "addr:street": "Asemansilta",
+          "addr:housenumber": "12",
+          "addr:city": "Kerava"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514857",
+      "osm": {
+        "id": 82102376,
+        "tags": {
+          "building": "yes",
+          "building:colour": "white",
+          "building:levels": "2",
+          "roof:colour": "#d96363",
+          "roof:shape": "mansard",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "3A",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514865",
+      "osm": {
+        "id": 40349775,
+        "tags": {
+          "building": "yes",
+          "building:colour": "red",
+          "building:levels": "2",
+          "roof:colour": "#E7E0D0",
+          "roof:shape": "hipped",
+          "name": "Keravan musiikkiopisto",
+          "addr:street": "Asemantie",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava",
+          "amenity": "arts_centre"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514881",
+      "osm": {
+        "id": 40349779,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "tan",
+          "building:levels": "2",
+          "roof:colour": "red",
+          "roof:shape": "gabled",
+          "addr:street": "Aleksis Kiven tie",
+          "addr:housenumber": "8",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514885",
+      "osm": {
+        "id": 1096402382,
+        "tags": {
+          "building": "roof",
+          "building:levels": "1",
+          "roof:shape": "skillion"
+        },
+        "match": {
+          "centroidDist": 5.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514893",
+      "osm": {
+        "id": 82102394,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "2",
+          "roof:colour": "#d96363",
+          "roof:shape": "gabled",
+          "name": "As Oy Kupariseppä",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514897",
+      "osm": {
+        "id": 40349774,
+        "tags": {
+          "building": "retail",
+          "building:colour": "#8F706A",
+          "building:levels": "2",
+          "roof:colour": "#BFC4C0",
+          "roof:shape": "hipped",
+          "name": "Kiinteistö Oy Nikkarinkruunu",
+          "addr:street": "Asemantie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514905",
+      "osm": {
+        "id": 117386797,
+        "tags": {
+          "building": "kindergarten",
+          "building:levels": "2",
+          "roof:shape": "gabled",
+          "name": "Vanha pappila",
+          "addr:street": "Hakalantie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 3.6,
+          "iou": 0.009
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514937",
+      "osm": {
+        "id": 40349767,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "red",
+          "building:levels": "1",
+          "roof:colour": "#5A6060",
+          "roof:shape": "gabled",
+          "addr:street": "Asemantie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 4.4,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514949",
+      "osm": {
+        "id": 118765854,
+        "tags": {
+          "building": "residential",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "gabled",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 3.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_514953",
+      "osm": {
+        "id": 82102402,
+        "tags": {
+          "building": "yes",
+          "building:colour": "white",
+          "building:levels": "2",
+          "roof:colour": "#d96363",
+          "roof:shape": "gabled",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "12",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515013",
+      "osm": {
+        "id": 1096737288,
+        "tags": {
+          "building": "roof",
+          "building:levels": "1",
+          "roof:shape": "skillion"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515021",
+      "osm": {
+        "id": 118685627,
+        "tags": {
+          "building": "roof",
+          "building:levels": "1,5",
+          "roof:shape": "flat",
+          "addr:street": "Asemansilta",
+          "addr:housenumber": "12"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 5.8,
+          "iou": 0.201
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515037",
+      "osm": {
+        "id": 118685659,
+        "tags": {
+          "building": "garages"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515045",
+      "osm": {
+        "id": 82226354,
+        "tags": {
+          "building": "semidetached_house",
+          "building:levels": "2",
+          "roof:colour": "#696969",
+          "roof:shape": "gabled",
+          "name": "Ryhmäkoti Asemansilta",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 2.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515053",
+      "osm": {
+        "id": 82102399,
+        "tags": {
+          "building": "yes",
+          "building:levels": "2",
+          "roof:colour": "#d96363",
+          "roof:shape": "gabled",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 5.9,
+          "iou": 0.371
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515069",
+      "osm": {
+        "id": 82226357,
+        "tags": {
+          "building": "yes",
+          "building:levels": "2",
+          "roof:shape": "gabled",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 5,
+          "iou": 0.929
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515085",
+      "osm": {
+        "id": 118685634,
+        "tags": {
+          "building": "warehouse",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "5"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.7,
+          "iou": 0.059
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515101",
+      "osm": {
+        "id": 118765869,
+        "tags": {
+          "building": "yes",
+          "building:levels": "2",
+          "roof:shape": "gabled",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515121",
+      "osm": {
+        "id": 42751528,
+        "tags": {
+          "building": "yes",
+          "building:colour": "#5A6060",
+          "building:levels": "1",
+          "roof:colour": "#BFC4C0",
+          "roof:shape": "gabled",
+          "name": "Keravan kuvataidekoulu",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "5",
+          "addr:city": "Kerava",
+          "amenity": "arts_centre"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515149",
+      "osm": {
+        "id": 118765860,
+        "tags": {
+          "building": "apartments",
+          "building:colour": "tan",
+          "building:levels": "2",
+          "roof:shape": "gabled",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 3.7,
+          "iou": 0.315
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515153",
+      "osm": {
+        "id": 61913360,
+        "tags": {
+          "building": "shed",
+          "roof:shape": "pyramidal"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515161",
+      "osm": {
+        "id": 118685645,
+        "tags": {
+          "building": "yes",
+          "building:levels": "4",
+          "roof:shape": "skillion",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "4B",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 13.3,
+          "iou": 0.084
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515169",
+      "osm": {
+        "id": 82102452,
+        "tags": {
+          "building": "yes",
+          "name": "Amor Pizzeria",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava",
+          "amenity": "restaurant"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515177",
+      "osm": {
+        "id": 118765857,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "roof:shape": "mansard",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 2.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515189",
+      "osm": {
+        "id": 40349769,
+        "tags": {
+          "building": "yes",
+          "building:colour": "red",
+          "building:levels": "1",
+          "roof:colour": "#4D4446",
+          "roof:shape": "gabled",
+          "addr:street": "Asemantie",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 1.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515201",
+      "osm": {
+        "id": 1059796879,
+        "tags": {
+          "building": "yes",
+          "building:levels": "0.5",
+          "roof:colour": "white",
+          "roof:shape": "dome"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515237",
+      "osm": {
+        "id": 1059799600,
+        "tags": {
+          "building": "yes",
+          "building:colour": "tan",
+          "building:levels": "1",
+          "roof:colour": "#ca3f3f",
+          "roof:shape": "gabled",
+          "addr:street": "Asemansilta",
+          "addr:housenumber": "2"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 2.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515261",
+      "osm": {
+        "id": 42751527,
+        "tags": {
+          "building": "public",
+          "building:levels": "1",
+          "roof:colour": "red",
+          "roof:shape": "gabled",
+          "name": "Galleria Alli",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "9",
+          "addr:city": "Kerava",
+          "shop": "art"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515277",
+      "osm": {
+        "id": 118685634,
+        "tags": {
+          "building": "warehouse",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "5"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515281",
+      "osm": {
+        "id": 118685643,
+        "tags": {
+          "building": "warehouse",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "skillion",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "4"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515285",
+      "osm": {
+        "id": 118685638,
+        "tags": {
+          "building": "garages"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "high",
+          "centroidDist": 9.5,
+          "iou": 0.545
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515297",
+      "osm": {
+        "id": 82102452,
+        "tags": {
+          "building": "yes",
+          "name": "Amor Pizzeria",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava",
+          "amenity": "restaurant"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 11.6,
+          "iou": 0.134
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515309",
+      "osm": {
+        "id": 118685578,
+        "tags": {
+          "building": "warehouse",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "skillion",
+          "addr:street": "Kuparisepänkatu",
+          "addr:housenumber": "4"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "high",
+          "centroidDist": 6.8,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515313",
+      "osm": {
+        "id": 1093738247,
+        "tags": {
+          "building": "carport",
+          "roof:colour": "#696969",
+          "roof:shape": "skillion"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515317",
+      "osm": {
+        "id": 118685641,
+        "tags": {
+          "building": "warehouse",
+          "addr:street": "Papintie",
+          "addr:housenumber": "5"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 11.4,
+          "iou": 0.166
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515325",
+      "osm": {
+        "id": 82121057,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "3",
+          "roof:shape": "gabled",
+          "addr:street": "Kaupinkuja",
+          "addr:housenumber": "5A, 5B, 5C",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515333",
+      "osm": {
+        "id": 1097781449,
+        "tags": {
+          "building": "shed",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "gabled"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515337",
+      "osm": {
+        "id": 118685641,
+        "tags": {
+          "building": "warehouse",
+          "addr:street": "Papintie",
+          "addr:housenumber": "5"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515341",
+      "osm": {
+        "id": 1097290852,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "roof:shape": "gabled",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "4"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 3.7,
+          "iou": 0.953
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515345",
+      "osm": {
+        "id": 118685648,
+        "tags": {
+          "building": "shed",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "skillion",
+          "amenity": "parking"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.8,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515349",
+      "osm": {
+        "id": 40349768,
+        "tags": {
+          "building": "shed",
+          "building:colour": "red",
+          "building:levels": "1",
+          "roof:colour": "#4D4446",
+          "roof:shape": "gabled"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 1.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515357",
+      "osm": {
+        "id": 827603579,
+        "tags": {
+          "building": "shed"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515369",
+      "osm": {
+        "id": 827603578,
+        "tags": {
+          "building": "shed"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515373",
+      "osm": {
+        "id": 1093504377,
+        "tags": {
+          "building": "carport",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "skillion"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 7,
+          "iou": 0.458
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515377",
+      "osm": {
+        "id": 1093504385,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "roof:shape": "gabled",
+          "addr:street": "Sampolankaari",
+          "addr:housenumber": "6"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515381",
+      "osm": {
+        "id": 721836242,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "6",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "25",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 5.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515389",
+      "osm": {
+        "id": 1093505594,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "roof:shape": "gabled",
+          "addr:street": "Vanha Valtatie",
+          "addr:housenumber": "6"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 3.2,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515409",
+      "osm": {
+        "id": 61829057,
+        "tags": {
+          "building": "shed",
+          "roof:shape": "gabled"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515437",
+      "osm": {
+        "id": 65630324,
+        "tags": {
+          "building": "shed"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "high",
+          "centroidDist": 6.2,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515457",
+      "osm": {
+        "id": 1107123243,
+        "tags": {
+          "building": "shed"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515493",
+      "osm": {
+        "id": 1101549595,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "6",
+          "roof:shape": "saltbox",
+          "addr:street": "Santaniitynkatu",
+          "addr:housenumber": "11",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515517",
+      "osm": {
+        "id": 118685639,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 5.7,
+          "iou": 0.268
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515561",
+      "osm": {
+        "id": 118749712,
+        "tags": {
+          "building": "warehouse",
+          "building:colour": "white",
+          "building:levels": "1",
+          "roof:colour": "#696969",
+          "roof:shape": "flat"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "high",
+          "centroidDist": 2.5,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515565",
+      "osm": {
+        "id": 118685594,
+        "tags": {
+          "building": "warehouse",
+          "addr:street": "Sampolankatu",
+          "addr:housenumber": "7"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515609",
+      "osm": {
+        "id": 954181055,
+        "tags": {
+          "building": "shed",
+          "building:levels": "1"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515613",
+      "osm": {
+        "id": 274188803,
+        "tags": {
+          "building": "school",
+          "building:colour": "#E7E0D0",
+          "building:levels": "2",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "5",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 3.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515617",
+      "osm": {
+        "id": 274188805,
+        "tags": {
+          "building": "public",
+          "building:colour": "#FEF7E6",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "name": "Keuda-talo",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "3",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515621",
+      "osm": {
+        "id": 116966961,
+        "tags": {
+          "building": "yes",
+          "building:levels": "3",
+          "roof:colour": "#5A6060",
+          "name": "Nikkarin Pysäköinti",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "7",
+          "amenity": "parking"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 14.8,
+          "iou": 0.405
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515629",
+      "osm": {
+        "id": 1181099725,
+        "tags": {
+          "building": "yes",
+          "amenity": "toilets"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 20.6,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515633",
+      "osm": {
+        "id": 65484272,
+        "tags": {
+          "building": "retail",
+          "building:colour": "#C9AD9D",
+          "building:levels": "2",
+          "roof:colour": "#BFC4C0",
+          "name": "Kauppakeskus Juho-Kusti",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "13",
+          "addr:city": "Kerava",
+          "shop": "mall"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515637",
+      "osm": {
+        "id": 65484271,
+        "tags": {
+          "building": "retail",
+          "building:colour": "#C9AD9D",
+          "building:levels": "2",
+          "roof:colour": "#5A6060",
+          "name": "Kauppakeskus Volmari",
+          "addr:street": "Asemanaukio",
+          "addr:housenumber": "7",
+          "shop": "mall"
+        },
+        "category": "commercial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515641",
+      "osm": {
+        "id": 274188804,
+        "tags": {
+          "building": "school",
+          "building:colour": "#F4F3D5",
+          "building:levels": "3",
+          "roof:colour": "#969A83",
+          "roof:shape": "gabled",
+          "addr:street": "Sibeliuksentie",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515645",
+      "osm": {
+        "id": 755664567,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "6",
+          "addr:street": "Junailijankatu",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 15.6,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515649",
+      "osm": {
+        "id": 117092300,
+        "tags": {
+          "building": "residential",
+          "building:levels": "5",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "12"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515681",
+      "osm": {
+        "id": 118606661,
+        "tags": {
+          "building": "yes",
+          "addr:street": "Heikkiläntie",
+          "addr:housenumber": "6",
+          "addr:city": "Kerava",
+          "amenity": "childcare"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 12.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515741",
+      "osm": {
+        "id": 403527128,
+        "tags": {
+          "building": "residential",
+          "roof:shape": "flat",
+          "addr:street": "Tapulitori",
+          "addr:housenumber": "1",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515753",
+      "osm": {
+        "id": 41645885,
+        "tags": {
+          "building": "residential",
+          "addr:street": "Tapulikatu",
+          "addr:housenumber": "19",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 11.5,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515773",
+      "osm": {
+        "id": 64942476,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "addr:street": "Sibeliuksentie",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515777",
+      "osm": {
+        "id": 243586781,
+        "tags": {
+          "building": "residential",
+          "building:colour": "#6F3718",
+          "building:levels": "5",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "addr:street": "Keskikatu",
+          "addr:housenumber": "1C"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515821",
+      "osm": {
+        "id": 52158804,
+        "tags": {
+          "building": "residential",
+          "addr:street": "Tapulitori",
+          "addr:housenumber": "2",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 13.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515837",
+      "osm": {
+        "id": 64942534,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "addr:street": "Sibeliuksentie",
+          "addr:housenumber": "4",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 12.2,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515845",
+      "osm": {
+        "id": 64942538,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:colour": "#4D4446",
+          "roof:shape": "flat",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "20",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 12.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515869",
+      "osm": {
+        "id": 66321897,
+        "tags": {
+          "building": "public",
+          "building:levels": "2",
+          "roof:colour": "#4D4446",
+          "roof:shape": "flat",
+          "addr:street": "Asemanaukio",
+          "addr:housenumber": "5"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 4.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_515889",
+      "osm": {
+        "id": 64942519,
+        "tags": {
+          "building": "residential",
+          "building:levels": "7",
+          "roof:colour": "#5A6060",
+          "roof:shape": "flat",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "18",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516013",
+      "osm": {
+        "id": 42781996,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "4",
+          "roof:colour": "#5A6060",
+          "roof:shape": "skillion",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "21",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 10.9,
+          "iou": 0.114
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516017",
+      "osm": {
+        "id": 116955891,
+        "tags": {
+          "building": "residential",
+          "building:levels": "8",
+          "addr:street": "Kurkelankatu",
+          "addr:housenumber": "11",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.5,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516041",
+      "osm": {
+        "id": 42751522,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "5",
+          "roof:colour": "#5A6060",
+          "roof:shape": "skillion",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "25",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 14.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516049",
+      "osm": {
+        "id": 42751523,
+        "tags": {
+          "building": "apartments",
+          "building:levels": "5",
+          "roof:colour": "#5A6060",
+          "roof:shape": "skillion",
+          "addr:street": "Paasikivenkatu",
+          "addr:housenumber": "23",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516061",
+      "osm": {
+        "id": 116955890,
+        "tags": {
+          "building": "residential",
+          "building:levels": "8",
+          "addr:street": "Kurkelankatu",
+          "addr:housenumber": "9",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 13.6,
+          "iou": 0.214
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516089",
+      "osm": {
+        "id": 41645886,
+        "tags": {
+          "building": "yes",
+          "name": "Keravan hätäkeskus",
+          "addr:street": "Tapulikatu",
+          "addr:housenumber": "15"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 15,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516321",
+      "osm": {
+        "id": 117482864,
+        "tags": {
+          "building": "yes",
+          "addr:street": "Heikkiläntie",
+          "addr:housenumber": "7"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516337",
+      "osm": {
+        "id": 96718218,
+        "tags": {
+          "building": "yes",
+          "addr:street": "Heikkiläntie",
+          "addr:housenumber": "8"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 16,
+          "iou": 0.211
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516429",
+      "osm": {
+        "id": 117482866,
+        "tags": {
+          "building": "yes",
+          "addr:street": "Heikkiläntie",
+          "addr:housenumber": "5"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 7.3,
+          "iou": 0.291
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516445",
+      "osm": {
+        "id": 272187613,
+        "tags": {
+          "building": "shed",
+          "building:colour": "#F4F3D5",
+          "building:levels": "1",
+          "roof:colour": "#5A6060",
+          "roof:shape": "gabled"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 13.5,
+          "iou": 0.241
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516513",
+      "osm": {
+        "id": 272187613,
+        "tags": {
+          "building": "shed",
+          "building:colour": "#F4F3D5",
+          "building:levels": "1",
+          "roof:colour": "#5A6060",
+          "roof:shape": "gabled"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 16.2,
+          "iou": 0.395
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516589",
+      "osm": {
+        "id": 42751525,
+        "tags": {
+          "building": "residential",
+          "building:colour": "tan",
+          "building:levels": "2",
+          "roof:colour": "#b5b5b5",
+          "roof:shape": "mansard",
+          "name": "As Oy Daugin Huvila",
+          "addr:street": "Pumpputehtaankatu",
+          "addr:housenumber": "20",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "medium",
+          "centroidDist": 10.1,
+          "iou": 0.134
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516657",
+      "osm": {
+        "id": 1072425183,
+        "tags": {
+          "building": "roof"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516813",
+      "osm": {
+        "id": 822910112,
+        "tags": {
+          "building": "yes",
+          "addr:street": "Tapulitori",
+          "addr:housenumber": "6"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 14,
+          "iou": 0.537
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516945",
+      "osm": {
+        "id": 272187614,
+        "tags": {
+          "building": "roof",
+          "roof:colour": "#5A6060"
+        },
+        "match": {
+          "quality": "high",
+          "centroidDist": 12.8,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_516961",
+      "osm": {
+        "id": 52158803,
+        "tags": {
+          "building": "shed",
+          "roof:colour": "#4D4446"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "high",
+          "centroidDist": 11.8,
+          "iou": 0.587
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517121",
+      "osm": {
+        "id": 96718217,
+        "tags": {
+          "building": "yes",
+          "addr:street": "Heikkiläntie",
+          "addr:housenumber": "8"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 11,
+          "iou": 0.418
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517125",
+      "osm": {
+        "id": 1096402381,
+        "tags": {
+          "building": "roof",
+          "building:levels": "1",
+          "roof:shape": "skillion"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 7.6,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517165",
+      "osm": {
+        "id": 272135705,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "addr:street": "Kurkelankatu",
+          "addr:housenumber": "13",
+          "amenity": "parking"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517205",
+      "osm": {
+        "id": 117482860,
+        "tags": {
+          "building": "garage"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517249",
+      "osm": {
+        "id": 118685636,
+        "tags": {
+          "building": "warehouse",
+          "addr:street": "Heikkiläntie",
+          "addr:housenumber": "6"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 10.1,
+          "iou": 0.065
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517281",
+      "osm": {
+        "id": 117482871,
+        "tags": {
+          "building": "garage"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_517373",
+      "osm": {
+        "id": 1424657871,
+        "tags": {
+          "building": "yes",
+          "building:levels": "1",
+          "roof:shape": "gabled"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 11,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518297",
+      "osm": {
+        "id": 82121697,
+        "tags": {
+          "building": "government",
+          "name": "Seurakuntakeskus",
+          "addr:street": "Papintie",
+          "addr:housenumber": "2-6",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.3,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518373",
+      "osm": {
+        "id": 67624467,
+        "tags": {
+          "building": "residential",
+          "building:levels": "6",
+          "roof:shape": "flat",
+          "addr:street": "Kuoppakuja",
+          "addr:housenumber": "3A, 3B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 12.9,
+          "iou": 0.051
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518377",
+      "osm": {
+        "id": 65630316,
+        "tags": {
+          "building": "residential",
+          "building:levels": "6",
+          "roof:shape": "flat",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "7A,7B",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "high",
+          "centroidDist": 7.9,
+          "iou": 1
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518593",
+      "osm": {
+        "id": 118685595,
+        "tags": {
+          "building": "school",
+          "roof:shape": "gabled",
+          "addr:street": "Lapilanpolku",
+          "addr:housenumber": "12",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 9.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518777",
+      "osm": {
+        "id": 117478482,
+        "tags": {
+          "building": "government",
+          "addr:street": "Hakalantie",
+          "addr:housenumber": "12",
+          "addr:city": "Kerava"
+        },
+        "category": "civic",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.9,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518781",
+      "osm": {
+        "id": 117479638,
+        "tags": {
+          "building": "detached",
+          "roof:shape": "gabled",
+          "addr:street": "Paloasemantie",
+          "addr:housenumber": "1a",
+          "addr:city": "Kerava"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 8.3,
+          "iou": 0.035
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_518937",
+      "osm": {
+        "id": 862956795,
+        "tags": {
+          "building": "garage"
+        },
+        "category": "industrial",
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.4,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_519233",
+      "osm": {
+        "id": 117482868,
+        "tags": {
+          "building": "detached",
+          "roof:shape": "hipped",
+          "addr:street": "Porvoonkatu",
+          "addr:housenumber": "16"
+        },
+        "category": "residential",
+        "match": {
+          "quality": "low",
+          "centroidDist": 13.1,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_519325",
+      "osm": {
+        "id": 118854419,
+        "tags": {
+          "building": "farm_auxiliary"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 12.7,
+          "iou": 0
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_519361",
+      "osm": {
+        "id": 118854417,
+        "tags": {
+          "building": "farm_auxiliary"
+        },
+        "match": {
+          "quality": "medium",
+          "centroidDist": 2.7,
+          "iou": 0.175
+        }
+      }
+    },
+    {
+      "nlsId": "helsinki_2020_519365",
+      "osm": {
+        "id": 118854417,
+        "tags": {
+          "building": "farm_auxiliary"
+        },
+        "match": {
+          "quality": "low",
+          "centroidDist": 11.4,
+          "iou": 0
+        }
+      }
+    }
+  ]
+}

@@ -1,4 +1,9 @@
 import * as THREE from 'three';
+import {
+  FacadeMaterials,
+  setFacadeTexture,
+  type BuildingCategory,
+} from './FacadeShader';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -8,29 +13,65 @@ interface BuildingBox {
 }
 
 interface BuildingMeta {
-  id:       string;
-  height:   number;
-  fn:       string;
-  roofType: string;
-  box:      BuildingBox;
+  id:             string;
+  height:         number;
+  fn:             string;
+  category:       BuildingCategory;
+  roofType:       string;
+  box:            BuildingBox;
+  wallVertStart?: number;
+  wallVertCount?: number;
+  roofVertStart?: number;
+  roofVertCount?: number;
+  wallColour?:    string;
+  roofColour?:    string;
+}
+
+interface WallGroup {
+  category:  BuildingCategory;
+  triStart:  number;
+  triCount:  number;
 }
 
 interface KeravaMetaJson {
   buildingCount: number;
   buildings:     BuildingMeta[];
+  wallGroups?:   WallGroup[];
   terrainHalf?:  number;
   terrainSegs?:  number;
 }
 
 // ── Material palette (spring Kerava) ────────────────────────────────────────
 
-// Building walls: cream-white (residential) + concrete grey (commercial)
-const MAT_WALL_A     = new THREE.MeshPhongMaterial({ color: 0xd4cdc4, shininess: 8,  side: THREE.DoubleSide });
-const MAT_WALL_B     = new THREE.MeshPhongMaterial({ color: 0xa8a89a, shininess: 8,  side: THREE.DoubleSide });
 // Building roofs: rust-red (residential pitched), dark grey (mid-rise flat), light grey (commercial flat)
 const MAT_ROOF_A     = new THREE.MeshPhongMaterial({ color: 0x8b3a2a, shininess: 4,  side: THREE.DoubleSide });
 const MAT_ROOF_B     = new THREE.MeshPhongMaterial({ color: 0x4a4a4a, shininess: 4,  side: THREE.DoubleSide });
 const MAT_ROOF_C     = new THREE.MeshPhongMaterial({ color: 0xb8b0a8, shininess: 4,  side: THREE.DoubleSide });
+
+// ── Per-category default colours (RGB 0-1, must match material palette above) ─
+
+const WALL_COLOUR_DEFAULT: Record<BuildingCategory, [number,number,number]> = {
+  residential: [0xd4/255, 0xcd/255, 0xc4/255],
+  commercial:  [0xa8/255, 0xa8/255, 0x9a/255],
+  industrial:  [0x8a/255, 0x88/255, 0x80/255],
+  civic:       [0xc8/255, 0xb8/255, 0x9a/255],
+  unknown:     [0xc0/255, 0xb8/255, 0xb0/255],
+};
+
+const ROOF_COLOUR_DEFAULT: Record<BuildingCategory, [number,number,number]> = {
+  residential: [0x8b/255, 0x3a/255, 0x2a/255], // rust-red  (matches MAT_ROOF_A)
+  civic:       [0x8b/255, 0x3a/255, 0x2a/255],
+  commercial:  [0x4a/255, 0x4a/255, 0x4a/255], // dark grey (matches MAT_ROOF_B)
+  industrial:  [0x4a/255, 0x4a/255, 0x4a/255],
+  unknown:     [0xb8/255, 0xb0/255, 0xa8/255], // light grey (matches MAT_ROOF_C)
+};
+
+/** Parse a CSS / hex colour string into linear [r,g,b] (0-1). Returns null on failure. */
+function parseColour(str: string): [number,number,number] | null {
+  const c = new THREE.Color();
+  try { c.set(str as THREE.ColorRepresentation); } catch { return null; }
+  return [c.r, c.g, c.b];
+}
 const MAT_GROUND     = new THREE.MeshLambertMaterial({ color: 0x9e9070 }); // pale straw-tan spring ground
 const MAT_URBAN      = new THREE.MeshLambertMaterial({ color: 0x7a7872 }); // grey urban paving
 const MAT_ROAD       = new THREE.MeshLambertMaterial({ color: 0x484848 }); // weathered asphalt
@@ -171,10 +212,15 @@ export class CityMap {
     // this._createRoads();  // re-enable later if 3D roads are needed
     // this._createTrees();  // hidden — uncomment to re-enable
 
-    const wallMesh = this._buildMultiMesh(wallsBuf,
-      [MAT_WALL_A, MAT_WALL_B], [0.55]);
-    const roofMesh = this._buildMultiMesh(roofsBuf,
-      [MAT_ROOF_A, MAT_ROOF_B, MAT_ROOF_C], [0.30, 0.65]);
+    const wallMesh = this._buildFacadeMesh(
+      wallsBuf,
+      meta.wallGroups ?? [],
+      this._buildWallColourBuf(meta.buildings, new Uint32Array(wallsBuf, 0, 1)[0]),
+    );
+    const roofMesh = this._buildRoofMesh(
+      roofsBuf,
+      this._buildRoofColourBuf(meta.buildings, new Uint32Array(roofsBuf, 0, 1)[0]),
+    );
     if (wallMesh) this.group.add(wallMesh);
     if (roofMesh) this.group.add(roofMesh);
 
@@ -260,6 +306,87 @@ export class CityMap {
     const h11 = this._terrainHeights[r1 * COLS + c1];
     return h00 * (1-tx)*(1-tz) + h10 * tx*(1-tz) + h01 * (1-tx)*tz + h11 * tx*tz;
   }
+  // ── Facade wall mesh builder ─────────────────────────────────────────────────
+
+  /**
+   * Build a single merged wall mesh with one draw group per building category.
+   * Index ranges come from the sorted wallGroups written by process-gml.mjs.
+   * Falls back to a two-material split if wallGroups is absent (old binary).
+   */
+  private _buildFacadeMesh(buf: ArrayBuffer, groups: WallGroup[], wallColours?: Float32Array): THREE.Mesh | null {
+    // Header: [vertexCount: Uint32][indexCount: Uint32][stride: Uint32]  (12 bytes)
+    // stride = 3 → old format (xyz only); stride = 5 → new format (xyz + faceWidth + faceMaxY)
+    const header      = new Uint32Array(buf, 0, 3);
+    const vertexCount = header[0];
+    const indexCount  = header[1];
+    const stride      = header[2] || 3; // default 3 for legacy files
+    if (vertexCount === 0 || indexCount === 0) return null;
+
+    const posOffset = 12; // 3 × Uint32
+    const idxOffset = posOffset + vertexCount * stride * 4;
+    const allFloats = new Float32Array(buf, posOffset, vertexCount * stride);
+    const indices   = new Uint32Array(buf, idxOffset, indexCount);
+
+    // Extract interleaved positions (floats 0-2) and optional face-extent (floats 3-4)
+    const positions = new Float32Array(vertexCount * 3);
+    for (let i = 0; i < vertexCount; i++) {
+      positions[i * 3    ] = allFloats[i * stride    ];
+      positions[i * 3 + 1] = allFloats[i * stride + 1];
+      positions[i * 3 + 2] = allFloats[i * stride + 2];
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+
+    if (stride >= 6) {
+      // aFaceExt: vec3 — .x = faceWidth, .y = faceMaxY, .z = faceMinY
+      const faceExt = new Float32Array(vertexCount * 3);
+      for (let i = 0; i < vertexCount; i++) {
+        faceExt[i * 3    ] = allFloats[i * stride + 3]; // faceWidth
+        faceExt[i * 3 + 1] = allFloats[i * stride + 4]; // faceMaxY
+        faceExt[i * 3 + 2] = allFloats[i * stride + 5]; // faceMinY
+      }
+      geo.setAttribute('aFaceExt', new THREE.BufferAttribute(faceExt, 3));
+    } else if (stride >= 5) {
+      // Legacy 5-float format — no faceMinY, use 2-component
+      const faceExt = new Float32Array(vertexCount * 2);
+      for (let i = 0; i < vertexCount; i++) {
+        faceExt[i * 2    ] = allFloats[i * stride + 3];
+        faceExt[i * 2 + 1] = allFloats[i * stride + 4];
+      }
+      geo.setAttribute('aFaceExt', new THREE.BufferAttribute(faceExt, 2));
+    }
+
+    // Per-vertex wall colours from OSM enrichment (or category defaults)
+    if (wallColours && wallColours.length === vertexCount * 3) {
+      geo.setAttribute('color', new THREE.BufferAttribute(wallColours, 3));
+    }
+
+    geo.computeVertexNormals();
+
+    const mats: THREE.Material[] = [];
+
+    if (groups.length > 0) {
+      for (let i = 0; i < groups.length; i++) {
+        const { category, triStart, triCount } = groups[i];
+        geo.addGroup(triStart * 3, triCount * 3, i);
+        mats.push(FacadeMaterials[category] ?? FacadeMaterials.unknown);
+      }
+    } else {
+      // Legacy fallback: two equal splits with default materials
+      const half = Math.floor(indexCount / 2 / 3) * 3;
+      geo.addGroup(0, half, 0);
+      geo.addGroup(half, indexCount - half, 1);
+      mats.push(FacadeMaterials.residential, FacadeMaterials.commercial);
+    }
+
+    const mesh = new THREE.Mesh(geo, mats);
+    mesh.castShadow    = true;
+    mesh.receiveShadow = true;
+    return mesh;
+  }
+
   // ── Multi-material binary mesh builder ──────────────────────────────────────
 
   /**
@@ -267,12 +394,14 @@ export class CityMap {
    * @param splits  array of fractional boundaries, e.g. [0.55, 0.80] for 3 groups
    */
   private _buildMultiMesh(buf: ArrayBuffer, mats: THREE.Material[], splits: number[]): THREE.Mesh | null {
-    const header      = new Uint32Array(buf, 0, 2);
+    // Header: [vertexCount: Uint32][indexCount: Uint32][stride: Uint32]  (12 bytes)
+    const header      = new Uint32Array(buf, 0, 3);
     const vertexCount = header[0];
     const indexCount  = header[1];
+    // stride in header[2] — roofs are always 3 (xyz only)
     if (vertexCount === 0 || indexCount === 0) return null;
 
-    const posOffset = 8;
+    const posOffset = 12;
     const idxOffset = posOffset + vertexCount * 3 * 4;
     const positions = new Float32Array(buf, posOffset, vertexCount * 3);
     const indices   = new Uint32Array(buf,  idxOffset, indexCount);
@@ -294,6 +423,135 @@ export class CityMap {
     mesh.castShadow    = true;
     mesh.receiveShadow = true;
     return mesh;
+  }
+
+  // ── Roof mesh (vertex-coloured) ───────────────────────────────────────────────
+
+  /**
+   * Builds the roof mesh with per-vertex colours from OSM enrichment data.
+   * Falls back to a single flat colour derived from the buffer size when
+   * no colour buffer is supplied (pre-enrichment data).
+   */
+  private _buildRoofMesh(buf: ArrayBuffer, roofColours?: Float32Array): THREE.Mesh | null {
+    const header      = new Uint32Array(buf, 0, 3);
+    const vertexCount = header[0];
+    const indexCount  = header[1];
+    if (vertexCount === 0 || indexCount === 0) return null;
+
+    const posOffset = 12;
+    const idxOffset = posOffset + vertexCount * 3 * 4;
+    const positions = new Float32Array(buf, posOffset, vertexCount * 3);
+    const indices   = new Uint32Array(buf,  idxOffset, indexCount);
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+
+    if (roofColours && roofColours.length === vertexCount * 3) {
+      geo.setAttribute('color', new THREE.BufferAttribute(roofColours, 3));
+    }
+
+    geo.computeVertexNormals();
+
+    const useVertexColours = !!(roofColours && roofColours.length === vertexCount * 3);
+    const mat = new THREE.MeshPhongMaterial({
+      vertexColors: useVertexColours,
+      color:        useVertexColours ? 0xffffff : 0x8b3a2a,
+      shininess:    4,
+      side:         THREE.DoubleSide,
+    });
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow    = true;
+    mesh.receiveShadow = true;
+    return mesh;
+  }
+
+  // ── Per-vertex colour buffer builders ────────────────────────────────────────
+
+  /** Generate an RGB Float32Array (0-1 per channel) for wall vertices.
+   *  Returns undefined if no building has vertex-range metadata (pre-enrichment data). */
+  private _buildWallColourBuf(buildings: BuildingMeta[], totalVerts: number): Float32Array | undefined {
+    if (!buildings.some(b => b.wallVertStart !== undefined)) return undefined;
+
+    const buf = new Float32Array(totalVerts * 3);
+    for (const b of buildings) {
+      const start = b.wallVertStart;
+      const count = b.wallVertCount;
+      if (start === undefined || count === undefined || count === 0) continue;
+
+      let rgb: [number,number,number] | null = b.wallColour ? parseColour(b.wallColour) : null;
+      if (!rgb) rgb = WALL_COLOUR_DEFAULT[b.category] ?? WALL_COLOUR_DEFAULT.unknown;
+
+      const end = start + count;
+      for (let v = start; v < end; v++) {
+        buf[v * 3    ] = rgb[0];
+        buf[v * 3 + 1] = rgb[1];
+        buf[v * 3 + 2] = rgb[2];
+      }
+    }
+    return buf;
+  }
+
+  /** Generate an RGB Float32Array (0-1 per channel) for roof vertices.
+   *  Returns undefined if no building has vertex-range metadata. */
+  private _buildRoofColourBuf(buildings: BuildingMeta[], totalVerts: number): Float32Array | undefined {
+    if (!buildings.some(b => b.roofVertStart !== undefined)) return undefined;
+
+    const buf = new Float32Array(totalVerts * 3);
+    for (const b of buildings) {
+      const start = b.roofVertStart;
+      const count = b.roofVertCount;
+      if (start === undefined || count === undefined || count === 0) continue;
+
+      let rgb: [number,number,number] | null = b.roofColour ? parseColour(b.roofColour) : null;
+      if (!rgb) rgb = ROOF_COLOUR_DEFAULT[b.category] ?? ROOF_COLOUR_DEFAULT.unknown;
+
+      const end = start + count;
+      for (let v = start; v < end; v++) {
+        buf[v * 3    ] = rgb[0];
+        buf[v * 3 + 1] = rgb[1];
+        buf[v * 3 + 2] = rgb[2];
+      }
+    }
+    return buf;
+  }
+
+  // ── Facade texture loading ────────────────────────────────────────────────────
+
+  /**
+   * Attempt to load tileable facade textures from /textures/.
+   * Each file is optional — the procedural window shader works without them;
+   * the textures just add surface detail (brick, plaster, cladding).
+   */
+  private _loadFacadeTextures(): void {
+    const loader = new THREE.TextureLoader();
+    const maxAniso = this._renderer
+      ? this._renderer.capabilities.getMaxAnisotropy()
+      : 4;
+
+    const entries: Array<[BuildingCategory, string]> = [
+      ['residential', '/textures/facade-residential.webp'],
+      ['commercial',  '/textures/facade-commercial.webp'],
+      ['industrial',  '/textures/facade-industrial.webp'],
+      ['civic',       '/textures/facade-civic.webp'],
+    ];
+
+    for (const [category, path] of entries) {
+      loader.load(
+        path,
+        (tex) => {
+          tex.colorSpace  = THREE.SRGBColorSpace;
+          tex.wrapS       = THREE.RepeatWrapping;
+          tex.wrapT       = THREE.RepeatWrapping;
+          tex.anisotropy  = maxAniso;
+          setFacadeTexture(category, tex);
+          console.log(`[CityMap] Facade texture loaded: ${path}`);
+        },
+        undefined,
+        () => { /* texture not present — procedural shader handles it */ },
+      );
+    }
   }
 
   // ── Static world geometry ────────────────────────────────────────────────────────────

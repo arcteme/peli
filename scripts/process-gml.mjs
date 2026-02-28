@@ -7,9 +7,12 @@
  * faces via earcut, and writes compact binary geometry + metadata to public/.
  *
  * Output
- *   public/kerava-walls.bin   – wall surface geometry
- *   public/kerava-roofs.bin   – roof surface geometry
- *   public/kerava-meta.json   – per-building metadata + AABB for collision
+ *   public/kerava-walls.bin       – wall surface geometry
+ *   public/kerava-roofs.bin       – roof surface geometry
+ *   public/kerava-terrain.bin     – terrain heightmap
+ *   data/kerava-meta-full.json    – full per-building metadata (private, gitignored)
+ *
+ * Run scripts/strip-meta.mjs afterwards to produce the client-safe public/kerava-meta.json
  *
  * Binary format (both *.bin files)
  *   Bytes 0-3   : vertexCount  (Uint32LE)
@@ -42,19 +45,42 @@ const BASE_ELEV = 30;
 
 // ── Paths ──────────────────────────────────────────────────────────────────────
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const GML_PATH  = resolve(__dirname, '../src/world/L4143F.gml');
-const OUT_DIR   = resolve(__dirname, '../public');
+const __dirname  = dirname(fileURLToPath(import.meta.url));
+const GML_PATH   = resolve(__dirname, '../src/world/L4143F.gml');
+const OUT_DIR    = resolve(__dirname, '../public');
+const DATA_DIR   = resolve(__dirname, '../data');
+
+// ── Building geometry → visual category ──────────────────────────────────────
+
+/**
+ * Classify a building into a visual facade category using its LOD2 box geometry.
+ * NLS bldg:function codes are unusable in this dataset (all "1000"), so we use:
+ *   - box height         (maxY − minY, metres)
+ *   - ground footprint   (width × depth, m²)
+ *   - distance from play-area centre (metres)
+ */
+export const CATEGORY_ORDER = ['residential', 'commercial', 'civic', 'industrial', 'unknown'];
+
+function geoCategory(minX, minY, minZ, maxX, maxY, maxZ, cx, cz) {
+  const h    = maxY - minY;
+  const w    = maxX - minX;
+  const d    = maxZ - minZ;
+  const foot = w * d;
+  const dist = Math.hypot(cx, cz);
+
+  if (h < 4.5)                          return 'industrial';  // garages, sheds
+  if (foot > 3000)                      return 'commercial';  // supermarkets, big-box
+  if (h > 18 && dist < 220)            return 'commercial';  // city-centre towers
+  if (h > 10)                           return 'residential'; // apartment blocks
+  if (h > 6  && foot > 700)            return 'commercial';  // mid-size commercial
+  return 'residential';                                        // default: houses
+}
 
 // ── Accumulators ───────────────────────────────────────────────────────────────
 
-/** Flat vertex arrays  [x, y, z, x, y, z …]  (scene space, before Y-shift) */
-const wallVerts = [];
+/** Roof vertex/index arrays — walls are accumulated per-building, sorted at write time */
 const roofVerts = [];
-
-/** Flat index arrays  [i, j, k …] */
-const wallIdxs = [];
-const roofIdxs = [];
+const roofIdxs  = [];
 
 /** Ground elevation samples: { cx, cz, groundY } – one per kept building (before global shift) */
 const elevSamples = [];
@@ -187,6 +213,13 @@ function processBuildingEnd() {
   // Deduplicated floor-corner set: key = "x|z" rounded to 0.01 m
   const floorCornerMap = new Map();
 
+  // Per-building wall geometry — collected locally, written in sorted order at write time
+  const bldgWallVerts = [];
+  const bldgWallIdxs  = [];
+
+  // Track roof vertex range across the face loop (global roofVerts is append-only)
+  const roofVertStart = roofVerts.length / 3;
+
   for (const face of curFaces) {
     // Ground faces: collect corner vertices but don't render them
     if (face.type === 'ground') {
@@ -204,18 +237,40 @@ function processBuildingEnd() {
       continue;
     }
 
-    const isRoof = face.type === 'roof';
-    const verts  = isRoof ? roofVerts : wallVerts;
-    const idxs   = isRoof ? roofIdxs  : wallIdxs;
+    if (face.type === 'roof') {
+      // ── Roof: plain 3-float vertices ──────────────────────────────────────
+      const offset = roofVerts.length / 3;
+      const tris   = triangulatePolygon(face.coords);
+      if (tris.length === 0) continue;
+      for (const c of face.coords) roofVerts.push(c);
+      for (const idx of tris) roofIdxs.push(offset + idx);
+    } else {
+      // ── Wall: 6-float vertices [x,y,z, faceWidth, faceMaxY, faceMinY] ────
+      // Compute face normal to determine horizontal UV direction
+      const [fnx,,fnz] = newellNormal(face.coords);
+      const isDominantX = Math.abs(fnx) > Math.abs(fnz);
+      let minU = Infinity, maxU = -Infinity, maxFaceY = -Infinity, minFaceY = Infinity;
+      for (let i = 0; i < face.coords.length; i += 3) {
+        const u = isDominantX ? face.coords[i + 2] : face.coords[i]; // Z or X
+        const y = face.coords[i + 1];
+        if (u < minU) minU = u;
+        if (u > maxU) maxU = u;
+        if (y > maxFaceY) maxFaceY = y;
+        if (y < minFaceY) minFaceY = y;
+      }
+      const faceWidth = maxU - minU; // horizontal span of this wall face (metres)
 
-    const offset = verts.length / 3;
-    const tris   = triangulatePolygon(face.coords);
-    if (tris.length === 0) continue;
-
-    // Append vertices
-    for (const c of face.coords) verts.push(c);
-    // Append indices (offset into the global buffer)
-    for (const idx of tris) idxs.push(offset + idx);
+      const offset = bldgWallVerts.length / 6; // WALL_STRIDE = 6
+      const tris   = triangulatePolygon(face.coords);
+      if (tris.length === 0) continue;
+      for (let i = 0; i < face.coords.length; i += 3) {
+        bldgWallVerts.push(
+          face.coords[i], face.coords[i + 1], face.coords[i + 2],
+          faceWidth, maxFaceY, minFaceY,
+        );
+      }
+      for (const idx of tris) bldgWallIdxs.push(offset + idx);
+    }
 
     // Update AABB
     for (let i = 0; i < face.coords.length; i += 3) {
@@ -238,13 +293,21 @@ function processBuildingEnd() {
     ];
   }
 
+  const roofVertCount = roofVerts.length / 3 - roofVertStart;
+
   buildings.push({
-    id:       curBuilding.id,
-    height:   curBuilding.height,
-    fn:       curBuilding.fn,
-    roofType: curBuilding.roofType,
-    box: { minX, minY, minZ, maxX, maxY, maxZ },
+    id:          curBuilding.id,
+    height:      curBuilding.height,
+    fn:          curBuilding.fn,
+    category:    geoCategory(minX, minY, minZ, maxX, maxY, maxZ, cx, cz),
+    roofType:    curBuilding.roofType,
+    box:         { minX, minY, minZ, maxX, maxY, maxZ },
     floorCorners,
+    roofVertStart,
+    roofVertCount,
+    // Per-building wall geometry — amalgamated in sorted order at write time
+    _wallVerts:  bldgWallVerts,
+    _wallIdxs:   bldgWallIdxs,
   });
 
   // Record each floor corner as an elevation sample for IDW terrain generation
@@ -390,19 +453,23 @@ saxStream.on('end', async () => {
 
   // ── Normalise Y so the lowest vertex sits exactly at y = 0 ─────────────────
   let minY = Infinity;
-  for (let i = 1; i < wallVerts.length; i += 3) if (wallVerts[i] < minY) minY = wallVerts[i];
+  for (const b of buildings) {
+    // Wall stride = 6: Y is at indices 1, 7, 13, …
+    for (let i = 1; i < b._wallVerts.length; i += 6) if (b._wallVerts[i] < minY) minY = b._wallVerts[i];
+  }
   for (let i = 1; i < roofVerts.length; i += 3) if (roofVerts[i] < minY) minY = roofVerts[i];
 
   console.log(`Ground-level elevation (before shift): ${(minY + BASE_ELEV).toFixed(2)} m ASL`);
 
-  for (let i = 1; i < wallVerts.length; i += 3) wallVerts[i] -= minY;
-  for (let i = 1; i < roofVerts.length; i += 3) roofVerts[i] -= minY;
   for (const b of buildings) {
+    for (let i = 1; i < b._wallVerts.length; i += 6) b._wallVerts[i] -= minY;   // Y coord
+    for (let i = 4; i < b._wallVerts.length; i += 6) b._wallVerts[i] -= minY;   // faceMaxY
+    for (let i = 5; i < b._wallVerts.length; i += 6) b._wallVerts[i] -= minY;   // faceMinY
     b.box.minY -= minY;
     b.box.maxY -= minY;
-    // Shift floor corner Y values to match the global Y normalisation
     for (const fc of b.floorCorners) fc[1] -= minY;
   }
+  for (let i = 1; i < roofVerts.length; i += 3) roofVerts[i] -= minY;
   for (const s of elevSamples) s.groundY -= minY;
 
   // ── Build terrain heightmap (IDW from building ground samples) ──────────────
@@ -469,11 +536,36 @@ saxStream.on('end', async () => {
     }
   }
 
-  // ── Write files ─────────────────────────────────────────────────────────────
-  await mkdir(OUT_DIR, { recursive: true });
+  // ── Amalgamate wall geometry in category-sorted order ─────────────────────
+  // residential → commercial → civic → industrial → unknown
+  // Contiguous per-category index ranges let CityMap.ts use addGroup() cheaply.
+  const catOrder = { residential: 0, commercial: 1, civic: 2, industrial: 3, unknown: 4 };
+  buildings.sort((a, b) => (catOrder[a.category] ?? 4) - (catOrder[b.category] ?? 4));
 
-  await writeBin(resolve(OUT_DIR, 'kerava-walls.bin'), wallVerts, wallIdxs);
-  await writeBin(resolve(OUT_DIR, 'kerava-roofs.bin'), roofVerts, roofIdxs);
+  const wallVerts  = [];
+  const wallIdxs   = [];
+  const wallGroups = [];
+
+  for (const cat of CATEGORY_ORDER) {
+    const triStart = wallIdxs.length / 3;
+    for (const b of buildings) {
+      if (b.category !== cat || b._wallVerts.length === 0) continue;
+      b.wallVertStart = wallVerts.length / 6;
+      b.wallVertCount = b._wallVerts.length / 6;
+      const offset = wallVerts.length / 6; // WALL_STRIDE = 6
+      for (const v of b._wallVerts) wallVerts.push(v);
+      for (const idx of b._wallIdxs) wallIdxs.push(offset + idx);
+    }
+    const triCount = wallIdxs.length / 3 - triStart;
+    if (triCount > 0) wallGroups.push({ category: cat, triStart, triCount });
+  }
+
+  // ── Write files ─────────────────────────────────────────────────────────────
+  await mkdir(OUT_DIR,  { recursive: true });
+  await mkdir(DATA_DIR, { recursive: true });
+
+  await writeBin(resolve(OUT_DIR, 'kerava-walls.bin'), wallVerts, wallIdxs, 6);
+  await writeBin(resolve(OUT_DIR, 'kerava-roofs.bin'), roofVerts, roofIdxs, 3);
 
   // Terrain: header [cols:Uint32, rows:Uint32] + Float32Array of heights
   const terrainHeader = new Uint32Array([COLS, ROWS]);
@@ -484,26 +576,32 @@ saxStream.on('end', async () => {
   await writeFile(resolve(OUT_DIR, 'kerava-terrain.bin'), terrainBuf);
   console.log(`  kerava-terrain.bin: ${COLS}×${ROWS} height samples, ${(terrainBuf.length / 1024).toFixed(1)} KB`);
 
+  // Strip internal geometry arrays before serialising
+  for (const b of buildings) { delete b._wallVerts; delete b._wallIdxs; }
+
   const meta = {
     buildingCount: buildings.length,
     center: { E: CENTER_E, N: CENTER_N },
     radius: RADIUS,
     terrainHalf: TERRAIN_HALF,
     terrainSegs: TERRAIN_SEGS,
+    wallGroups,
     buildings,
   };
-  await writeFile(resolve(OUT_DIR, 'kerava-meta.json'), JSON.stringify(meta));
-  console.log(`  kerava-meta.json: ${buildings.length} building records`);
+  await writeFile(resolve(DATA_DIR, 'kerava-meta-full.json'), JSON.stringify(meta, null, 2));
+  console.log(`  data/kerava-meta-full.json: ${buildings.length} buildings | groups: ${wallGroups.map(g => `${g.category}(${g.triCount}Δ)`).join(', ')}`);
+  console.log('\nRun "node scripts/strip-meta.mjs" to generate public/kerava-meta.json');
   console.log('Done ✓');
 });
 
 // ── Binary writer ──────────────────────────────────────────────────────────────
 
-async function writeBin(filePath, verts, idxs) {
-  const vertexCount = verts.length / 3;  // number of XYZ triplets
-  const indexCount  = idxs.length;       // number of individual indices (triangles * 3)
+async function writeBin(filePath, verts, idxs, stride = 3) {
+  const vertexCount = verts.length / stride; // number of vertices
+  const indexCount  = idxs.length;           // number of individual indices (triangles * 3)
 
-  const header    = new Uint32Array([vertexCount, indexCount]);
+  // Header: [vertexCount, indexCount, stride]  – 12 bytes
+  const header    = new Uint32Array([vertexCount, indexCount, stride]);
   const positions = new Float32Array(verts);
   const indices   = new Uint32Array(idxs);
 
